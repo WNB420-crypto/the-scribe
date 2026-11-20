@@ -12,6 +12,8 @@ function stripeSession(id){return new Promise(r=>{if(!SK||!/^cs_[A-Za-z0-9_]+$/.
   https.get({host:"api.stripe.com",path:"/v1/checkout/sessions/"+encodeURIComponent(id),headers:{Authorization:"Bearer "+SK}},res=>{let d="";res.on("data",c=>d+=c);res.on("end",()=>{try{r(JSON.parse(d))}catch(e){r(null)}})}).on("error",()=>r(null))})}
 http.createServer(async(req,res)=>{
   const u=new URL(req.url,"http://x");
+  if(u.pathname==="/api/health"){if(!SK)return json(res,200,{server:"ok",stripeKey:"missing"});
+    return https.get({host:"api.stripe.com",path:"/v1/checkout/sessions?limit=1",headers:{Authorization:"Bearer "+SK}},r=>{r.resume();json(res,200,{server:"ok",stripeKey:r.statusCode===200?"working":"rejected ("+r.statusCode+")",paymentLink:!!process.env.PAYMENT_LINK})}).on("error",()=>json(res,200,{server:"ok",stripeKey:"unreachable"}))}
   if(u.pathname==="/api/config")return json(res,200,{paywall:true,freeChapters:+(process.env.FREE_CHAPTERS||3),paymentLink:process.env.PAYMENT_LINK||"",price:process.env.PRICE_LABEL||"$4.99"});
   if(req.method==="POST"&&u.pathname==="/api/verify"){const b=await body(req);
     if(b.code){const c=String(b.code).trim().toUpperCase();return CODES.includes(c)?json(res,200,{ok:true,token:sign("code_"+c)}):json(res,200,{ok:false,error:"That code isn't valid."})}
