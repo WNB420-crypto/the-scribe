@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>The Scribe — One Story of Every Scripture</title>
+<link rel="icon" href="assets/ui/icon180.png"><link rel="apple-touch-icon" href="assets/ui/icon180.png">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#d8b46a;--gold2:#f3dc9c;--parch:#eadfc6;--dim:#a8977a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;background:#000;color:var(--parch);font-family:'EB Garamond',Georgia,serif;overflow:hidden;touch-action:none;overscroll-behavior:none}
+button{font-family:inherit;color:inherit}
+#c{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+#touch{position:fixed;inset:0;z-index:2}
+#hud{position:fixed;left:0;right:0;top:0;z-index:5;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;display:none;align-items:center;gap:8px;background:linear-gradient(rgba(0,0,0,.65),transparent);pointer-events:none}
+body.ingame #hud{display:flex}
+#hud>*{pointer-events:auto}
+.stats{display:flex;gap:9px;flex:1;flex-wrap:wrap;font-family:Cinzel,serif;font-size:11.5px;letter-spacing:.05em;text-shadow:0 1px 3px #000}
+.st{white-space:nowrap}.st b{color:var(--gold2)}.st.bump b{animation:bump .9s}
+@keyframes bump{0%{color:#fff;text-shadow:0 0 12px #ffd98a}}
+.hbtn{background:rgba(20,14,8,.6);border:1px solid #d8b46a66;border-radius:7px;padding:6px 9px;font-family:Cinzel,serif;font-size:10.5px;letter-spacing:.06em;color:var(--gold2);cursor:pointer;backdrop-filter:blur(4px)}
+#era{position:fixed;left:12px;top:calc(44px + env(safe-area-inset-top));z-index:5;display:none;font-family:Cinzel,serif;text-shadow:0 1px 4px #000;pointer-events:none}
+body.ingame #era{display:block}
+#eraTag{font-size:11px;letter-spacing:.16em;color:#fff;opacity:.85}
+#obj{font-size:13px;font-family:'EB Garamond';font-style:italic;color:var(--gold2);margin-top:2px}
+#comp{position:fixed;left:50%;transform:translateX(-50%);top:calc(84px + env(safe-area-inset-top));z-index:5;display:none;flex-direction:column;align-items:center;pointer-events:none;text-shadow:0 1px 4px #000}
+#arrow{width:28px;height:28px;transition:transform .1s linear}
+#compL{font-family:Cinzel,serif;font-size:10px;letter-spacing:.1em;color:#fff;opacity:.85;margin-top:2px}
+#joy{position:fixed;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:2px solid rgba(243,220,156,.45);background:rgba(0,0,0,.18);z-index:4;display:none;pointer-events:none}
+#knob{position:absolute;left:50%;top:50%;width:46px;height:46px;border-radius:50%;background:rgba(243,220,156,.55);transform:translate(-50%,-50%)}
+#hint{position:fixed;left:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:3;font-family:Cinzel,serif;font-size:9.5px;letter-spacing:.16em;color:#fff;opacity:.45;pointer-events:none;display:none}
+body.ingame #hint{display:block}
+#act{position:fixed;right:18px;bottom:calc(26px + env(safe-area-inset-bottom));z-index:6;display:none;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer}
+#act .o{width:78px;height:78px;border-radius:50%;background:url(assets/ui/ui_interact.png) center/cover,radial-gradient(circle,#f3dc9c,#b8903a);box-shadow:0 0 30px #ffd98aaa;display:flex;align-items:center;justify-content:center;font-size:30px;color:#2a1808;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{box-shadow:0 0 10px #ffd98a55;transform:scale(.95)}}
+#actL{font-family:Cinzel,serif;font-size:10.5px;letter-spacing:.08em;color:#fff;text-shadow:0 1px 4px #000;max-width:150px;text-align:center}
+/* cinema */
+.bar{position:fixed;left:0;right:0;height:0;background:#000;z-index:7;transition:height .6s ease;pointer-events:none}
+#barT{top:0}#barB{bottom:0}
+body.cine #barT{height:11vh}body.cine #barB{height:calc(20vh + env(safe-area-inset-bottom))}
+body.cine #hud,body.cine #era,body.cine #comp,body.cine #hint{opacity:0;transition:opacity .4s}
+#cap{position:fixed;left:0;right:0;bottom:calc(3vh + env(safe-area-inset-bottom));z-index:8;text-align:center;padding:0 22px;font-size:18px;line-height:1.45;color:#f2e8d2;max-height:17vh;overflow:hidden;opacity:0;pointer-events:none;text-shadow:0 1px 6px #000}
+#cap.on{animation:capin .9s forwards}
+@keyframes capin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#cap small{display:block;font-family:Cinzel,serif;font-size:11px;letter-spacing:.4em;color:var(--dim);margin-bottom:4px}
+#cap .sub{font-size:14px;color:var(--dim)}
+#skip{position:fixed;right:14px;top:calc(4vh + env(safe-area-inset-top));z-index:9;display:none;font-family:Cinzel,serif;font-size:10px;letter-spacing:.2em;color:#fff;background:rgba(255,255,255,.08);border:1px solid #ffffff44;border-radius:999px;padding:6px 12px;cursor:pointer}
+body.cine #skip{display:block}
+#tapnext{position:fixed;left:50%;transform:translateX(-50%);top:calc(5vh + env(safe-area-inset-top));z-index:9;display:none;font-family:Cinzel,serif;font-size:9px;letter-spacing:.3em;color:#ffffff66;pointer-events:none}
+body.cine #tapnext{display:block}
+#flash{position:fixed;inset:0;background:#fff8e8;z-index:15;opacity:0;pointer-events:none;transition:opacity .9s}
+#flash.on{opacity:1}
+/* dialogue */
+#dlg{position:fixed;left:0;right:0;bottom:0;z-index:10;max-height:74vh;display:none;background:linear-gradient(rgba(16,11,7,.94),rgba(9,6,4,.98));border-top:1px solid #d8b46a66;border-radius:18px 18px 0 0;box-shadow:0 -10px 40px #000}
+#dlg.on{display:block;animation:up .45s}
+@keyframes up{from{transform:translateY(40%);opacity:0}}
+#dlg .in{max-height:74vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 18px calc(22px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+.loc{font-family:Cinzel,serif;font-size:10.5px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.title{font-family:Cinzel,serif;font-size:21px;color:var(--gold2);margin:4px 0 10px}
+.txt p{font-size:17.5px;line-height:1.5;margin:0 0 12px;opacity:0;animation:rise .8s forwards}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.q{font-style:italic;color:#f6e3ae}
+.ch{display:block;width:100%;text-align:left;background:linear-gradient(90deg,#d8b46a1c,#d8b46a06);border:1px solid #d8b46a55;border-radius:9px;padding:12px 14px;margin:9px 0;font-size:17px;line-height:1.3;cursor:pointer;opacity:0;animation:rise .6s forwards}
+.ch:active,.ch:hover{background:#d8b46a2e;border-color:var(--gold)}
+.ch .tags{display:block;font-family:Cinzel,serif;font-size:10px;letter-spacing:.08em;color:var(--dim);margin-top:5px}
+.ch .tags b{color:var(--gold)}.ch .tags i{font-family:'EB Garamond';font-size:12.5px;color:#c8b48a}
+.back{display:block;margin:10px auto 0;background:none;border:none;color:var(--dim);font-family:Cinzel,serif;font-size:11px;letter-spacing:.14em;cursor:pointer;padding:8px}
+/* overlays */
+.overlay{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(24px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom))}
+.overlay.on{display:flex;animation:fade .8s}
+@keyframes fade{from{opacity:0}}
+#title{justify-content:flex-end;background:#000 url(assets/ui/title.jpg) center top/cover no-repeat}
+#title::before{content:"";position:absolute;inset:0;background:linear-gradient(transparent 45%,rgba(6,4,3,.55) 62%,rgba(6,4,3,.96) 88%);pointer-events:none}
+#title>*{position:relative}
+#title .seal,#title h1,#title .sub{display:none}
+#title p{font-size:15.5px;margin-bottom:14px;text-shadow:0 1px 6px #000}
+#card{position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;background:#000;overflow:hidden}
+#card.on{display:flex;animation:fade .9s}
+#card.out{opacity:0;transition:opacity .7s}
+#card .bgb{position:absolute;inset:-30px;background:center/cover no-repeat;filter:blur(22px) brightness(.55);transform:scale(1.1)}
+#card img{position:relative;width:100%;max-height:100%;object-fit:contain;box-shadow:0 0 60px #000;animation:kb 4.5s ease-out forwards}
+@keyframes kb{from{transform:scale(1.06)}to{transform:scale(1)}}
+#card .tap{position:absolute;bottom:calc(20px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-family:Cinzel,serif;font-size:10px;letter-spacing:.3em;color:#ffffff88}
+.st img{width:15px;height:15px;vertical-align:-3px;margin-right:3px}
+.cx .k img{width:20px;height:20px;vertical-align:-5px;margin-right:6px}
+#title h1{font-family:Cinzel,serif;font-weight:700;font-size:44px;letter-spacing:.14em;margin:0;color:var(--gold2);text-shadow:0 0 30px #d8b46a66}
+#title .sub{font-family:Cinzel,serif;font-size:11px;letter-spacing:.3em;color:var(--dim);margin:10px 0 22px}
+#title p{max-width:440px;font-size:16.5px;line-height:1.5;color:#cbbd9f;margin:0 0 22px}
+.big{display:block;width:250px;margin:8px auto;padding:13px;border-radius:999px;font-family:Cinzel,serif;letter-spacing:.14em;font-size:13px;cursor:pointer;border:1px solid var(--gold);background:rgba(0,0,0,.3);color:var(--gold2)}
+.big.pri{background:var(--gold);color:#1a1008;font-weight:700}
+.seal{width:80px;height:80px;margin-bottom:14px}
+#codex{justify-content:flex-start;text-align:left;background:#0d0906f5}
+#codex .head{width:100%;max-width:680px;display:flex;justify-content:space-between;align-items:center}
+#codex h3{font-family:Cinzel,serif;color:var(--gold2);margin:0;font-size:20px;letter-spacing:.1em}
+.tabs{width:100%;max-width:680px;display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tab{border:1px solid #d8b46a44;background:none;border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer;color:var(--dim)}
+.tab.on{background:#d8b46a22;color:var(--gold2);border-color:var(--gold)}
+#cxlist{width:100%;max-width:680px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;-webkit-user-select:text;user-select:text}
+.cx{border:1px solid #d8b46a2a;border-radius:10px;padding:12px 14px;margin:0 0 10px;background:#ffffff05}
+.cx .k{font-family:Cinzel,serif;font-size:10px;letter-spacing:.16em}
+.cx h4{margin:3px 0 2px;font-size:18px;color:var(--gold2);font-weight:600}
+.cx .src{font-size:13.5px;color:var(--dim);font-style:italic;margin-bottom:6px}
+.cx p{margin:0;font-size:16px;line-height:1.48;color:#dccfb3}
+.cx.locked{opacity:.4;font-style:italic}
+.k.canon{color:#e8c77a}.k.hidden{color:#c99ae8}.k.parallel{color:#7ac8c0}.k.scholar{color:#e88a6a}
+#end{background:radial-gradient(ellipse at 50% 40%,#2a1c0ef0,#060403fa 75%)}
+#endInner{max-height:100%;overflow-y:auto;padding:10px 0}
+#end .eyebrow{font-family:Cinzel;letter-spacing:.4em;color:var(--dim);font-size:12px}
+#end h2{font-family:Cinzel,serif;font-size:30px;color:var(--gold2);margin:8px 0 14px}
+#end p{max-width:540px;margin:0 auto 14px;font-size:17px;line-height:1.55;color:#d8caa9}
+#end .estats{font-family:Cinzel,serif;font-size:13px;letter-spacing:.1em;color:var(--gold);margin:10px 0 18px}
+#end .sm{font-size:15px;color:#8f826a}
+#toast{position:fixed;left:50%;top:calc(120px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-12px);background:rgba(29,20,11,.92);border:1px solid var(--gold);color:var(--gold2);padding:9px 15px;border-radius:999px;font-family:Cinzel,serif;font-size:11px;letter-spacing:.08em;z-index:30;opacity:0;transition:all .4s;pointer-events:none;max-width:92vw;text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+
+/* ===== UI polish ===== */
+#dlg{background:linear-gradient(rgba(18,12,7,.42),rgba(10,7,4,.68)),url(assets/ui/parchment.jpg) center/380px repeat,linear-gradient(#1a120b,#0c0805);border-top:none;box-shadow:0 -12px 50px #000,inset 0 1px 0 #d8b46a99,inset 0 3px 0 #0008,inset 0 4px 0 #d8b46a44}
+#dlg .in::before{content:"";display:block;height:44px;margin:-6px auto 6px;max-width:300px;filter:drop-shadow(0 2px 4px #000a);background:url(assets/ui/ornament.png) center/contain no-repeat}
+.title{text-shadow:0 0 18px #d8b46a55;letter-spacing:.03em}
+.ch{position:relative;padding-left:34px;background:linear-gradient(90deg,#2a1c0e,#16100a);border:1px solid #6a5230;box-shadow:inset 0 0 0 1px #00000080,0 2px 8px #0006}
+.ch::before{content:"";position:absolute;left:13px;top:17px;width:8px;height:8px;transform:rotate(45deg);background:linear-gradient(135deg,#f3dc9c,#a8803a);box-shadow:0 0 8px #ffd98a88}
+.ch:hover,.ch:active{border-color:#d8b46a;background:linear-gradient(90deg,#3a2812,#1c140b);box-shadow:0 0 18px #d8b46a33,inset 0 0 0 1px #00000080}
+.back{opacity:.8}
+.cx{background:linear-gradient(rgba(20,14,8,.5),rgba(14,10,6,.62)),url(assets/ui/parchment.jpg) center/340px repeat,#140e08;border:1px solid #5a4428;box-shadow:inset 0 0 0 1px #0008}
+#codex h3::after,#end h2::after{content:"";display:block;height:38px;margin:8px auto 0;max-width:240px;filter:drop-shadow(0 2px 4px #000a);background:url(assets/ui/ornament.png) center/contain no-repeat}
+#codex h3::after{margin-left:0}
+.hbtn{background:linear-gradient(#2a1c0ecc,#120c07cc);border-color:#8a6a3a;box-shadow:inset 0 1px 0 #f3dc9c33}
+#cap{font-size:18.5px;letter-spacing:.01em}
+#cap::before{content:"";display:block;height:16px;margin:0 auto 8px;max-width:220px;opacity:.85;background:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 24'%3E%3Cg fill='none' stroke='%23d8b46a' stroke-width='1.2'%3E%3Cpath d='M10 12 H120 M180 12 H290'/%3E%3Cpath d='M120 12 q10 -10 20 0 q10 10 20 0 q10 -10 20 0' /%3E%3Ccircle cx='150' cy='12' r='4' fill='%23f3dc9c'/%3E%3Cpath d='M150 2 L153 12 L150 22 L147 12Z' fill='%23d8b46a'/%3E%3Ccircle cx='10' cy='12' r='2' fill='%23d8b46a'/%3E%3Ccircle cx='290' cy='12' r='2' fill='%23d8b46a'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
+#toast{background:linear-gradient(#2a1c0ef0,#120c07f0);box-shadow:0 4px 20px #000a,0 0 16px #d8b46a33}
+.big{box-shadow:0 2px 14px #0008}
+.big.pri{background:linear-gradient(#f3dc9c,#c8a04a);box-shadow:0 0 24px #d8b46a55}
+#pay{background:radial-gradient(ellipse at 50% 40%,#2a1c0ef0,#060403fa 75%);z-index:60}
+#payInner{max-height:100%;overflow-y:auto;padding:16px 18px;text-align:center}
+#pay .eyebrow{font-family:Cinzel;letter-spacing:.3em;color:var(--dim);font-size:11px}
+#pay h2{font-family:Cinzel,serif;font-size:28px;color:var(--gold2);margin:8px 0 6px}
+#pay h2::after{content:"";display:block;height:38px;margin:8px auto 4px;max-width:240px;background:url(assets/ui/ornament.png) center/contain no-repeat}
+#pay p{max-width:520px;margin:0 auto 14px;font-size:16.5px;line-height:1.55;color:#d8caa9}
+#pay .payPrice b{color:var(--gold2)}
+.payCode{display:flex;gap:8px;justify-content:center;margin:14px auto 6px;max-width:300px}
+.payCode input{flex:1;min-width:0;padding:11px 14px;border-radius:999px;border:1px solid #6a5230;background:#120c07;color:#efe4c8;font-size:15px;letter-spacing:.08em}
+.payCode button{padding:0 16px;border-radius:999px;border:1px solid var(--gold);background:#2a1c0e;color:var(--gold2);font-family:Cinzel,serif;font-size:12px;letter-spacing:.1em}
+#payMsg{min-height:22px;color:#e8c890;font-style:italic;font-size:15px;margin:4px 0}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="touch"></div>
+<div id="hud">
+  <div class="stats"><span class="st" id="stF"><img src="assets/ui/ui_faith.png" alt="Faith"><b>0</b></span><span class="st" id="stW"><img src="assets/ui/ui_wisdom.png" alt="Wisdom"><b>0</b></span><span class="st" id="stV"><img src="assets/ui/ui_vision.png" alt="Vision"><b>0</b></span></div>
+  <button class="hbtn" id="camBtn">👁 1ST</button><button class="hbtn" id="snd">♪ OFF</button><button class="hbtn" id="cxBtn">📜 <span id="cxN">0</span></button>
+</div>
+<div id="era"><div id="eraTag"></div><div id="obj"></div></div>
+<div id="comp"><img id="arrow" src="assets/ui/ui_compass.png" alt=""><div id="compL"></div></div>
+<div id="joy"><div id="knob"></div></div>
+<div id="hint">LEFT THUMB · WALK &nbsp;&nbsp; RIGHT THUMB · LOOK</div>
+<button id="act"><div class="o"></div><div id="actL"></div></button>
+<div class="bar" id="barT"></div><div class="bar" id="barB"></div>
+<div id="cap"></div><button id="skip">SKIP ▸▸</button><div id="tapnext">TAP TO CONTINUE</div>
+<div id="flash"></div>
+<div id="card"><div class="bgb"></div><img alt=""><div class="tap">TAP TO ENTER</div></div>
+<div id="dlg"><div class="in"></div></div>
+
+<div class="overlay on" id="title">
+  <svg class="seal" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#d8b46a" stroke-width="1.5"/><circle cx="50" cy="50" r="38" fill="none" stroke="#d8b46a55"/><path d="M30 72 L70 28" stroke="#f3dc9c" stroke-width="3" stroke-linecap="round"/><path d="M30 72 L36 64" stroke="#2a1a0a" stroke-width="4" stroke-linecap="round"/><path d="M24 78 Q50 70 76 78" stroke="#d8b46a" fill="none" stroke-width="2"/></svg>
+  <h1>THE SCRIBE</h1>
+  <div class="sub">ONE STORY OF EVERY SCRIPTURE</div>
+  <p>Fourteen ages. One soul who writes them all. Walk from Eden to Hermon, from the Flood to Sinai, from the Bodhi tree to Golgotha, from the cave of Hira to the last page. You'll find the Bible, the lost books, the Qur'an, the Vedas, the sutras and the Granth along the way.</p>
+  <button class="big pri" id="newBtn">BEGIN A NEW LIFE</button>
+  <button class="big" id="contBtn" style="display:none">CONTINUE</button>
+  <button class="big" id="cxBtn2">THE CODEX</button>
+</div>
+<div class="overlay" id="codex"><div class="head"><h3>THE CODEX</h3><button class="hbtn" id="cxClose">CLOSE ✕</button></div><div class="tabs" id="cxTabs"></div><div id="cxlist"></div></div>
+<div class="overlay" id="end"><div id="endInner"></div></div>
+<div class="overlay" id="pay"><div id="payInner"><div class="eyebrow">THE FIRST THREE AGES ARE WRITTEN</div><h2>Continue the Story</h2>
+<p>You have walked through Eden, stood among the Watchers on Hermon, and survived the Flood. Eleven more ages wait: Abraham, Egypt, David, Babylon, the East, Judea, Galilee, Patmos, Alexandria, Hira and the Library of Every Book.</p>
+<p class="payPrice">Unlock the full life of the Scribe — one time, <b id="payPriceTxt">$4.99</b>. Every chapter, every ending, all 80 Codex scrolls.</p>
+<button class="big pri" id="payBuy">UNLOCK ALL CHAPTERS</button>
+<div class="payCode"><input id="payCodeIn" placeholder="Have a code?" autocomplete="off" autocapitalize="characters"><button id="payCodeBtn">APPLY</button></div>
+<div id="payMsg"></div>
+<button class="big" id="payBack">RETURN TO TITLE</button></div></div>
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+/* ================= CODEX ================= */
+const CATS={canon:"Canon",hidden:"Lost & Hidden",parallel:"Other Scriptures",scholar:"Scholar's Note"};
+const CX={
+
+enoch:["1 Enoch: The Book of the Watchers","hidden","1 Enoch 1–36 · c. 300–200 BCE","A Jewish apocalypse written in Enoch's name that expands Genesis 6 into the fall of two hundred angels on Mount Hermon. Aramaic fragments of it turned up among the Dead Sea Scrolls. The New Testament letter of Jude quotes it word for word (Jude 14–15). Today only the Ethiopian Orthodox Tewahedo Church keeps it as scripture."],
+azazel:["Azazel and the Forbidden Arts","hidden","1 Enoch 8–10","Azazel teaches humanity to forge swords, knives, shields and breastplates, along with bracelets, ornaments and eye paint. God orders Raphael to bind him hand and foot and throw him into darkness in the desert of Dudael. The name also appears in Leviticus 16, where one of the two Yom Kippur goats is sent off into the wilderness 'for Azazel.'"],
+giants:["The Book of Giants","hidden","Dead Sea Scrolls (4Q530–533) · Manichaean fragments","Aramaic fragments from Qumran tell the story from the Nephilim's side. The giants Ohyah and Hahyah have nightmares about a tablet scraped clean in water and a garden torn up by the roots, and they send Mahaway to ask Enoch what the dreams mean. The prophet Mani later took this book into his own scriptures, so pieces of it also survive in Middle Persian and Uyghur."],
+gen6:["The Sons of God and the Daughters of Men","canon","Genesis 6:1–4","Four short, strange verses: 'the sons of God saw the daughters of men that they were fair,' and 'There were giants in the earth in those days.' Genesis never explains them. Enoch, Jubilees, 2 Peter 2:4 and Jude 6 all read them as angels who sinned and were chained in darkness until judgment."],
+calendar:["The Astronomical Book","hidden","1 Enoch 72–82 · possibly 3rd century BCE","The angel Uriel shows Enoch the gates of the sun and moon and a 364-day year: exactly 52 weeks, so a festival never lands on the Sabbath. The Qumran community fought the Jerusalem priesthood over this calendar. It may be one of the oldest Jewish writings outside the Hebrew Bible."],
+taken:["Enoch Walked with God","canon","Genesis 5:24 · Hebrews 11:5","'And Enoch walked with God: and he was not; for God took him.' Enoch is the only person in the Genesis genealogies whose death is never recorded, and that silence gave rise to a whole library of later Enoch books. A later work, 2 Enoch, claims he wrote 366 books."],
+idris:["Idris, Raised to a High Place","parallel","Qur'an 19:56–57","The Qur'an praises Idris as a truthful prophet whom God raised to a lofty station. Muslim scholars have long identified Idris with Enoch, and some traditions credit him with first teaching writing and astronomy, the same gifts the Enoch books give him."],
+genflood:["Noah's Flood","canon","Genesis 6–9","God sees that the earth is filled with violence and sends the waters. Noah, his family and the animals ride out the flood in an ark of gopher wood that comes to rest on the mountains of Ararat. It ends in a covenant with every living creature and the bow set in the cloud."],
+gilgamesh:["The Epic of Gilgamesh, Tablet XI","parallel","Akkadian · standard version c. 1200 BCE, from older material","Utnapishtim tells Gilgamesh how the god Ea warned him through a reed wall to tear down his house and build a boat. The storm lasts seven days, and the boat grounds on Mount Nimush. He sends out a dove, then a swallow, then a raven that never comes back. When he sacrifices, the gods gather around the smell like flies. The tablet was deciphered by George Smith in 1872 and caused a sensation."],
+manu:["Manu and the Great Fish","parallel","Shatapatha Brahmana 1.8.1 · Hindu tradition","Manu saves a tiny fish, and it grows huge and warns him of a coming flood. He builds a ship and ties it to the fish's horn, and the fish tows him to a northern mountain. Later tradition identifies the fish as Matsya, the first avatar of Vishnu. Manu survives alone and offers a sacrifice, and from it a woman, Ida, comes forth."],
+atrahasis:["Atrahasis and the Necklace of Lapis","parallel","Old Babylonian · c. 1700 BCE","Older than the Gilgamesh flood. The gods send the flood because humanity's noise keeps the god Enlil awake. Enki saves the wise man Atrahasis. Afterward, in the Gilgamesh version, the mother goddess lifts her lapis-lazuli fly necklace and swears she will never forget those days. That is the Mesopotamian counterpart to the rainbow."],
+floodmem:["One Flood, Many Tongues","scholar","Source criticism of Genesis 6–9","Many scholars think Genesis 6–9 weaves two accounts together. In one, Noah takes one pair of every animal; in the other, seven pairs of the clean animals. In one the flood lasts forty days; in the other, the waters prevail for 150 days. Read beside the Mesopotamian versions, Genesis looks like a deliberate retelling: one God, a moral reason for the flood, and no gods cowering in fear."],
+aten:["The Great Hymn to the Aten","parallel","Pharaoh Akhenaten · c. 1350 BCE","The heretic pharaoh worshipped only the sun disc, the Aten, whose rays end in little hands. His hymn praises the god for night when lions prowl, ships on the sea, and the many works of creation. Its imagery is strikingly close to Psalm 104, though whether there is a direct link is still debated."],
+iam:["I AM THAT I AM","canon","Exodus 3:14","In Hebrew, 'ehyeh asher ehyeh,' which can also mean 'I will be what I will be.' It is tied to the divine name YHWH, which later Jews stopped saying aloud, reading 'Adonai' (Lord) in its place."],
+passover:["The Passover","canon","Exodus 12","The blood of a lamb on the doorposts, unleavened bread, bitter herbs, and the destroyer passing over the marked houses. Jews still keep the feast every spring, and the Gospels set the crucifixion at Passover time."],
+hammurabi:["The Code of Hammurabi","parallel","Babylon · c. 1754 BCE","282 laws carved on a black basalt stele that now stands in the Louvre. Law 196 puts out the eye of a man who destroys another man's eye, and its laws about a goring ox closely parallel Exodus 21:28–32. The Torah's laws belong to a wider Near Eastern legal tradition, recast as a covenant with one God."],
+jubilees:["The Book of Jubilees","hidden","c. 160–150 BCE","Presents itself as what the Angel of the Presence dictated to Moses on Sinai: the whole history from creation, dated in 'jubilees' of 49 years. It names Adam's daughters, has Mastema, prince of evil spirits, test Abraham, and insists on the 364-day calendar. Fifteen or more copies turned up at Qumran. It is scripture in the Ethiopian Orthodox Church."],
+calf:["The Golden Calf","canon","Exodus 32","Aaron makes the calf. Moses breaks the tablets, grinds the idol to powder, and makes the people drink it. Then the Levites go through the camp with swords, 'and there fell of the people that day about three thousand men.' The Bible does not soften its founders."],
+documentary:["Who Wrote the Torah?","scholar","The Documentary Hypothesis and its successors","Tradition credits Moses with all five books. Since the 1800s, scholars have argued that the Torah combines several sources, often labeled J, E, D and P, written over centuries and edited into their final form around the exile and Persian period. The details are hotly debated today, but most critical scholars agree that it had more than one author."],
+assumption:["The Assumption of Moses","hidden","1st century CE · partly lost","Jude 9 mentions the archangel Michael disputing with the devil over Moses' body. Early church writers said the story came from this book, whose surviving Latin text breaks off before that scene. It is one of several lost books that the New Testament quietly cites."],
+deut34:["The Death of Moses","canon","Deuteronomy 34 · Talmud, Bava Batra 14b–15a","The Torah describes Moses' death and burial, then says no one knows where his grave is 'unto this day.' The Talmud records a debate: one rabbi says Joshua wrote the last eight verses, while another says Moses wrote them in tears, at God's dictation."],
+psalm151:["Psalm 151","hidden","Septuagint · Dead Sea Psalms Scroll (11Q5)","A psalm in which David calls himself the smallest of his brothers, a shepherd who made a harp, chosen over his taller brothers, who then cut off Goliath's head. It is in Orthodox Bibles. A longer Hebrew version turned up at Qumran. Most Western Bibles leave it out."],
+elhanan:["Who Killed Goliath?","scholar","2 Samuel 21:19 · 1 Chronicles 20:5","1 Samuel 17 credits David. 2 Samuel 21:19 says Elhanan of Bethlehem killed 'Goliath the Gittite.' Chronicles, written later, smooths this over: Elhanan killed 'the brother of Goliath.' Scribes noticed the tension long before modern scholars did."],
+bathsheba:["David and Bathsheba","canon","2 Samuel 11–12 · Psalm 51","Adultery, a cover-up, and the arranged death of a loyal soldier, all told in plain words. Psalm 51's heading ties it to Nathan's rebuke. Strikingly, the Book of Chronicles retells David's reign and leaves the whole affair out."],
+psalm22:["My God, My God","canon","Psalm 22 · Mark 15:34","A psalm that opens with abandonment ('why hast thou forsaken me?') and then describes pierced hands and feet and men casting lots for clothing. Jesus cries out its first line in Aramaic from the cross. Christians read it as prophecy, Jewish readers as a psalm of a suffering righteous one, and it can be both."],
+jasher:["The Book of Jasher","hidden","Cited in Joshua 10:13 and 2 Samuel 1:18 · lost","The Bible quotes the 'Book of the Upright' twice: once for the sun standing still, once for David's lament over Saul and Jonathan ('How are the mighty fallen!'). The original is lost. Books sold under that name today are later works."],
+baal:["Baal, Rider of the Clouds","parallel","Ugaritic texts · Ras Shamra, found 1928","Canaanite poems from the city of Ugarit praise Baal as 'rider of the clouds' and describe his battle with Lotan, the seven-headed sea serpent. Psalm 68:4 calls God the one who 'rideth upon the heavens,' Psalm 29 sounds like a reworked storm-god hymn, and Isaiah 27:1 has God slay Leviathan. Israel's poets borrowed the imagery and gave it to their own God."],
+zabur:["The Zabur of Dawud","parallel","Qur'an 4:163 · 17:55","The Qur'an says God gave David (Dawud) the Zabur, generally understood as the Psalms. It is one of the four scriptures Islam honors as revealed, along with the Torah (Tawrat), the Gospel (Injil) and the Qur'an."],
+ps137:["By the Rivers of Babylon","canon","Psalm 137","It begins with one of the most beautiful laments ever written and ends with one of the most shocking lines in scripture: a blessing on whoever smashes Babylon's infants against the rocks. The Bible keeps the rage of exiles intact."],
+ezekiel:["The Chariot Vision","canon","Ezekiel 1–3","Four living creatures, each with four faces, wheels within wheels whose rims are full of eyes, and a sapphire throne. The rabbis limited the teaching of this chapter, and it became the root of Merkabah ('chariot') mysticism, the earliest Jewish mystical tradition. Ezekiel then eats a scroll that tastes like honey."],
+enuma:["Enuma Elish","parallel","Babylonian creation epic · c. 1100 BCE or earlier","Recited at the Babylonian New Year. Marduk kills the sea-dragon Tiamat and splits her body in two to make the sky and the earth. Genesis 1 opens with darkness on 'the deep' (tehom, linguistically related to Tiamat) and with waters divided above and below, but there is no battle, only a God who speaks. Many scholars read Genesis 1 as a quiet answer to Babylon."],
+zoroaster:["The Wise Lord and the Lie","parallel","Zoroastrian tradition · Avesta","Zoroastrianism teaches a good god of light, Ahura Mazda, opposed by the destructive spirit Angra Mainyu. It also teaches a final judgment, the resurrection of the dead, a savior figure (the Saoshyant), and a bridge that the righteous cross into paradise, a word borrowed from Persian. Many scholars think contact with Persia under Cyrus helped shape later Jewish and Christian ideas about Satan, angels and resurrection. How much it did is still debated."],
+daniel:["When Was Daniel Written?","scholar","Daniel 7–12","The book is set in the Babylonian exile of the 6th century BCE. Most critical scholars date its visions to about 165 BCE, because they track the persecutions of Antiochus IV in precise detail and then miss how he actually died. Traditional readers hold to an exilic date. The Greek additions (Susanna, Bel and the Dragon, the Song of the Three Young Men) are deuterocanonical."],
+cyrus:["Cyrus, the LORD's Anointed","canon","Isaiah 44:28–45:1 · Cyrus Cylinder","Isaiah calls a pagan Persian king God's 'anointed,' in Hebrew mashiach, the word that becomes 'messiah.' The Cyrus Cylinder in the British Museum records his policy of sending deported peoples and their gods back home. Under him the exiles returned to rebuild Jerusalem."],
+maccabees:["1 & 2 Maccabees","hidden","Deuterocanonical · 2nd–1st century BCE","The revolt against Antiochus IV, the cleansing of the Temple (the origin of Hanukkah), and in 2 Maccabees 7 a mother who watches her seven sons die, each one confessing hope in the resurrection. They are scripture for Catholics and Orthodox. Protestants moved them to the 'Apocrypha,' partly because 2 Maccabees 12 supports prayer for the dead."],
+dss:["The Dead Sea Scrolls","scholar","Qumran · discovered 1947–1956","In 1947 Bedouin shepherds found jars of scrolls in a cave above the Dead Sea. Eventually about 900 manuscripts came out of eleven caves. The Great Isaiah Scroll is roughly a thousand years older than the previous oldest Hebrew copy, and it is remarkably close to the later text. Enoch, Jubilees and the Book of Giants sit in the same caves as Genesis and Isaiah."],
+warscroll:["The War Scroll","hidden","Qumran (1QM)","A battle plan for the end of days: the Sons of Light against the Sons of Darkness, forty years of war with angels fighting on both sides. It names the trumpets, banners and formations, and the final victory belongs to God."],
+tobit:["The Book of Tobit","hidden","Deuterocanonical · Qumran fragments","A blind exile, a young man on a journey, and the archangel Raphael traveling in disguise. A demon, Asmodeus, has killed seven bridegrooms on their wedding nights and is driven off with the smoke of a fish's heart and liver. Catholic and Orthodox Bibles include it. Aramaic and Hebrew copies were found at Qumran."],
+thomas:["The Gospel of Thomas","hidden","Nag Hammadi Codex II · found 1945","114 sayings of Jesus with no birth story, miracles, crucifixion or resurrection. Some sayings parallel the canonical Gospels, while others are startling: a kingdom spread out upon the earth that people do not see, and Jesus found when you split wood or lift a stone. Greek fragments were found earlier at Oxyrhynchus. Its date is fiercely debated, anywhere from the late 1st to the 2nd century."],
+mary:["The Gospel of Mary","hidden","Berlin Codex · 2nd century","In this gospel, Mary Magdalene comforts the frightened disciples after Jesus departs and shares a vision he gave her privately about the soul's ascent past hostile powers. Peter bristles that the Savior would speak secretly with a woman, and Levi defends her, saying the Savior loved her more than them. Several pages are missing."],
+judas:["The Gospel of Judas","hidden","Codex Tchacos · published 2006","A 2nd-century Sethian gospel that Irenaeus condemned around 180 CE. In it Jesus laughs at the disciples' worship and reveals secrets to Judas alone. Some scholars read Judas as the hero, while others see him as a tragic figure still bound to demonic powers. The surviving copy was looted, mistreated, and painstakingly restored."],
+isa:["Isa in the Qur'an","parallel","Qur'an 4:157–158","The Qur'an honors Jesus (Isa) as Messiah and prophet, born of the virgin Mary. It says he was not killed or crucified but that it was made to appear so to them, and that God raised him up. Some early Christian groups had held related views. The Gnostic teacher Basilides, for example, taught that Simon of Cyrene was crucified in his place."],
+markending:["The Lost Ending of Mark","scholar","Mark 16:8 · Codex Sinaiticus and Vaticanus","The two oldest complete Greek Bibles end Mark at 16:8: the women flee the empty tomb 'for they were afraid.' Verses 9–20, with the resurrection appearances and snake-handling, were added later. Most modern Bibles print them in brackets."],
+revelation:["The Revelation to John","canon","Revelation · c. 95 CE","Seven churches, seven seals, four horsemen, a dragon, a beast, a harlot on seven hills, and finally a new Jerusalem. It was one of the most disputed books for the eastern churches, and even in the 1500s Luther said his spirit could not accommodate itself to it. It still made the canon."],
+num666:["666 or 616?","scholar","Revelation 13:18 · P.Oxy 115","Hebrew letters double as numbers. Spell 'Nero Caesar' in Hebrew and the letters add up to 666. Drop the final 'n', as in the Latin spelling, and you get 616, the number found in one of the oldest surviving fragments. The beast probably had a face John's first readers knew."],
+athanasius:["The 39th Festal Letter","scholar","Athanasius of Alexandria · Easter 367 CE","The first known list of exactly the 27 books of today's New Testament. It was not decided at the Council of Nicaea in 325, which is a popular myth: the canon formed slowly and differently from region to region. Athanasius also recommended some books, such as the Didache and the Shepherd of Hermas, as useful reading even though they were not canonical."],
+nag:["The Nag Hammadi Library","scholar","Upper Egypt · found December 1945","A farmer named Muhammad Ali al-Samman dug up a sealed jar near the cliff of Jabal al-Tarif. Inside were thirteen leather-bound codices: the Gospel of Thomas, the Gospel of Philip, the Secret Book of John and dozens more. One theory holds that monks from a nearby Pachomian monastery buried them after Athanasius' letter of 367."],
+ethiopian:["The Ethiopian Canon","parallel","Ethiopian Orthodox Tewahedo Church","With about 81 books, it is the largest Bible in Christendom. It keeps 1 Enoch and Jubilees, which survive complete only in Ge'ez, along with the three books of Meqabyan and others. Without Ethiopia, the Book of the Watchers would be known only from fragments."],
+luther:["The Apocrypha Set Aside","scholar","Luther Bible · 1534","Luther put Judith, Wisdom, Tobit, Sirach, Baruch, 1–2 Maccabees and other books between the Testaments, calling them useful and good to read but not equal to Scripture. He also placed Hebrews, James, Jude and Revelation at the back of his New Testament. Catholic Bibles have 73 books, Protestant Bibles 66, Orthodox Bibles more, and the Ethiopian Bible about 81."],
+
+genesis1:["Let There Be Light","canon","Genesis 1:1–2:3","Six days, each ending 'and it was good,' and a seventh of rest. God creates by speaking: no battle, no rival, no raw material named. Most scholars assign this account to the priestly writers of the exile, composed in the shadow of Babylon's creation epic."],
+eden:["The Garden and the Two Creations","canon","Genesis 2–3","A second creation story with a different order and a different name for God: man from dust, a garden with four rivers, a talking serpent, two trees, and a woman made from a rib. Genesis 1 and 2 sit side by side without being harmonized. The word 'Satan' never appears in the story; later readers identified the serpent with the devil."],
+nasadiya:["The Hymn of Creation","parallel","Rig Veda 10.129 · c. 1200–1000 BCE","Among the oldest religious texts still recited. It begins before existence and non-existence and ends in doubt: the one who fashioned it, 'he verily knows it, or perhaps he knows not' (Griffith's translation). It is rare for a scripture to end its creation story with a question."],
+memphite:["The Memphite Theology","parallel","Shabaka Stone · Egypt","The god Ptah creates the world by conceiving it in his heart and speaking it with his tongue. Creation by the word, carved on a stone now in the British Museum, centuries before John wrote 'In the beginning was the Word.'"],
+iblis:["The Angels Bow, Iblis Refuses","parallel","Qur'an 2:30–34 · 7:11–18 · 38:71–85","God tells the angels he is placing a successor on earth, teaches Adam the names of all things, and commands the angels to bow. All bow except Iblis: I am better than him, you made me from fire and him from clay. He is cast out and swears to lead humanity astray until the Day of Judgment."],
+adameve:["The Life of Adam and Eve","hidden","Greek and Latin versions · c. 1st century CE","In this Jewish book, Satan tells Adam why he fell: when Adam was made in God's image, Michael ordered the angels to worship him, and Satan refused to bow to one younger and lesser than himself. It is nearly the same story as the Qur'an's Iblis, which shows how widely the tale traveled."],
+lilith:["Lilith","hidden","Isaiah 34:14 · Alphabet of Ben Sira (c. 700–1000 CE)","Isaiah mentions a night creature, lilit. A medieval Jewish satire turns her into Adam's first wife, made from the same earth as him, who refused to lie beneath him and flew away. Older Mesopotamian texts know lilitu demons. The story is late, but it has lasted."],
+ibrahim:["Ibrahim and the Idols","parallel","Qur'an 21:51–70 · 6:74–79 · Genesis Rabbah 38","Abraham smashes his people's idols and leaves the axe with the largest one: ask him who did it. They throw him into a fire, and God commands: Fire, be cool and peaceful for Ibrahim. The Jewish midrash tells nearly the same story of Terah's idol shop. In another passage he watches a star, the moon and the sun set, and turns to the One who never sets."],
+apocabraham:["The Apocalypse of Abraham","hidden","Old Slavonic · 1st–2nd century CE","The young Abraham burns his father's wooden idol and hears God's voice. The angel Yahoel takes him on a heavenly journey where he sees Azazel, the same fallen Watcher from Enoch, cursed in the form of an unclean bird. Only one language preserved it: Slavonic."],
+akedah:["The Binding","canon","Genesis 22 · Qur'an 37:99–111","God commands Abraham to sacrifice his son, and an angel stops the knife. In Genesis the son is Isaac, and Moriah is later identified with the Temple Mount. The Qur'an does not name the son, who agrees to the sacrifice himself, and most Muslim scholars identify him as Ishmael. Eid al-Adha remembers it every year."],
+kaaba:["The House at Mecca","parallel","Qur'an 2:125–129 · 14:35–41","The Qur'an says Ibrahim and Ismail raised the foundations of the House and prayed for a messenger from their descendants. Tradition says Hajar ran seven times between the hills of Safa and Marwa searching for water until the spring of Zamzam burst forth, and pilgrims repeat her run during the Hajj."],
+hagar:["Hagar, Who Named God","canon","Genesis 16 · Genesis 21","An enslaved Egyptian woman, cast out twice into the desert. She is the only person in scripture who gives God a name: El Roi, 'the God who sees me.' God hears Ishmael crying and promises to make him a great nation."],
+bookofdead:["The Weighing of the Heart","parallel","Book of the Dead, Spell 125 · Egypt, c. 1550 BCE onward","In the Hall of Two Truths, the dead man's heart is weighed against the feather of Ma'at. He recites the 'negative confession': I have not killed, I have not stolen, I have not lied... If the heart is heavy, Ammit the Devourer eats it. Moral judgment after death, written down long before Sinai."],
+songs:["Song of Songs and Ecclesiastes","canon","Traditionally ascribed to Solomon","One book is frank love poetry in which God is never named. The other says all is vanity, the wise and the fool die alike, so eat your bread with joy. The rabbis debated whether either belonged in the canon. Rabbi Akiva called the Song the holy of holies."],
+kebra:["The Kebra Nagast","hidden","Ethiopian epic · 14th century, from older sources","The 'Glory of the Kings' says the Queen of Sheba, Makeda, bore Solomon a son, Menelik, who carried the Ark of the Covenant to Ethiopia. The Ethiopian Church still claims to guard it in Aksum, where no one is allowed to see it."],
+bilqis:["Sulayman and the Queen of Saba","parallel","Qur'an 27:15–44","Solomon understands the speech of birds and ants. A hoopoe tells him of a sun-worshipping queen. One with knowledge of the Book brings her throne before he can blink. At his palace she lifts her skirts, thinking the glass floor is water, and then submits to the Lord of the worlds."],
+dhammapada:["The Dhammapada","parallel","Pali Buddhist canon · sayings of the Buddha, c. 5th century BCE","Opens: 'All that we are is the result of what we have thought' (Max Müller, 1881). The Buddha is not a god. He is a man who woke up under the Bodhi tree after Mara the tempter threw armies and daughters at him and he touched the earth as his witness."],
+taoteching:["The Tao Te Ching","parallel","Attributed to Laozi · c. 4th century BCE","Sima Qian's history says the old archivist Laozi rode west on an ox, and the gatekeeper Yinxi would not let him pass until he wrote down his teaching: about five thousand characters. It begins: 'The Tao that can be trodden is not the enduring and unchanging Tao' (Legge)."],
+upanishad:["Thou Art That","parallel","Chandogya Upanishad 6 · c. 8th–6th century BCE","A father teaches his son Shvetaketu with salt dissolved in water: you cannot see it, but it is in every drop. So is Brahman, the self of all things, in you. 'Tat tvam asi': thou art that."],
+gita:["The Bhagavad Gita","parallel","Mahabharata, Book 6 · c. 2nd century BCE–2nd century CE","On a battlefield between armies of his own kin, the warrior Arjuna drops his bow. His charioteer, the god Krishna, teaches him about duty, the deathless self and devotion, and then reveals his cosmic form, blazing like a thousand suns."],
+axial:["The Axial Age","scholar","Karl Jaspers, 1949","The philosopher's name for roughly 800–200 BCE, when Israel's prophets, the Buddha, the Upanishads, Confucius, Laozi, Zoroastrian reform and the Greek philosophers all appear within a few centuries of one another. Historians argue about how real the pattern is, but the clustering is striking."],
+sirach:["Sirach: In Praise of the Scribe","hidden","Wisdom of Ben Sira · c. 180 BCE · deuterocanonical","A Jerusalem scribe compares the scribe's calling with the farmer, the smith and the potter. They keep the world going, he says, but the one who studies the law of the Most High seeks out the wisdom of the ancients. He signed his own name, which almost no biblical writer did."],
+wisdomsol:["The Wisdom of Solomon","hidden","Alexandria · c. 1st century BCE · deuterocanonical","Written in Greek in Solomon's name. Wisdom is a female figure, 'a breath of the power of God,' and the souls of the righteous are 'in the hand of God.' Catholic and Orthodox Bibles include it; Protestant Bibles moved it to the Apocrypha."],
+infancy:["The Clay Sparrows","hidden","Infancy Gospel of Thomas · 2nd century · Qur'an 3:49, 5:110","A five-year-old Jesus shapes twelve sparrows out of mud on the Sabbath, claps his hands, and they fly away. The story is outside the Christian canon, but the Qur'an has Jesus say he shapes birds from clay and breathes into them by God's permission. The same small miracle survives in two scriptures."],
+maryam:["Maryam","parallel","Qur'an, Sura 19 · Protevangelium of James","Mary is the only woman named in the Qur'an, more often than in the whole New Testament, and a sura bears her name. In labor, alone, she holds a palm tree that drops dates for her. Her childhood in the Temple, fed by angels, matches the 2nd-century Protevangelium of James, another book outside the canon."],
+waraqa:["Waraqa ibn Nawfal","scholar","Sahih al-Bukhari, Book of Revelation","Khadija's elderly, blind cousin, a Christian who had studied the earlier scriptures. When Muhammad came down from Hira trembling, Waraqa said this was the same Namus, the keeper of secrets, who had come to Moses, and that his people would drive him out. He died soon afterward."],
+iqra:["Read!","parallel","Qur'an 96:1–5 · 610 CE","By Muslim tradition, the first revelation came in the cave of Hira, when the angel Jibril pressed Muhammad and commanded him to recite in the name of the Lord who created, who taught by the pen. The Qur'an's 68th sura opens with an oath by the pen and what they write."],
+uthman:["The Uthmanic Codex","scholar","Medina · c. 650 CE","Verses were first kept in memory and written on palm stalks, flat stones, parchment and camel shoulder blades. Under Abu Bakr, Zayd ibn Thabit gathered them. The caliph Uthman had a standard copy sent to the major cities, and variant copies were burned. Leaves such as the Birmingham folios date to within decades of the Prophet."],
+suhuf:["The Earlier Books","parallel","Qur'an 87:18–19 · 3:3–4 · 5:46","The Qur'an presents itself as confirming the scriptures before it: the scrolls of Ibrahim and Musa, the Tawrat, the Zabur and the Injil. In its own telling, the books are one message sent again in different tongues, which is close to the idea this whole game is built on."],
+sleepers:["The Sleepers in the Cave","parallel","Qur'an 18:9–26 · Christian legend of Ephesus","Young believers flee a persecuting emperor and sleep in a cave for centuries, with their dog stretched at the threshold. A Syriac Christian legend tells the same story of the Seven Sleepers of Ephesus. The Qur'an even comments on people arguing over how many sleepers there were."],
+granth:["The Guru Granth Sahib","parallel","Compiled by Guru Arjan, 1604 · Amritsar","The Sikh scripture opens with Ik Onkar, 'One Creator.' It deliberately includes hymns by Hindu and Muslim saints such as Kabir, Namdev and the Sufi Baba Farid alongside the Sikh Gurus. In 1708 the tenth Guru declared that the book itself would be the Guru forever."]
+};
+
+/* ================= LEVELS =================
+ pts.c: [choice, [faith,wisdom,vision], codex, outcome, action] */
+const LEVELS=[
+/* ---------- I EDEN ---------- */
+{id:"eden",flora:"gtree",n:"I",t:"In the Beginning",sub:"Before time · Genesis · Rig Veda · Qur'an",
+ sky:["#6fa6e0","#f2d6a0","#fff3d6"],fog:["#f2e2bd",30,150],ground:"#5d8c3a",hemi:["#fff4d6","#4a6a2a",1.1],sun:["#fff0c8",1.1],fx:"light",bump:.22,spawn:[0,14],portal:[0,-30],
+ intro:["Before you have a name, you have a hand. It holds a reed, wet with ink that has not touched anything yet.","Humanity wrote its scriptures in a hundred tongues over five thousand years. In this story they are one story, and every hand that wrote them was yours: one soul, lent to every age.","Walk toward the lights. Each one is a moment the scriptures remember. The Codex will keep the history honest."],
+ outro:"You walk east of Eden, past cherubim and a sword of fire turning every way. Behind you the gate closes. Ahead, the generations begin.",
+ build(B){B.water(0,-18,90,2.4,"#5ab0d0",.32);B.water(0,-18,2.4,90,"#5ab0d0",.33);
+  B.scatter(46,(x,z)=>B.tree(x,z,.8+B.r()*.7,B.r()>.5?"#3f7a2e":"#5a8f34"),9,30);
+  const tk=B.tree0(0,-18,2.3,"#2f6a2a");const th=[tk,tk.userData.trunk];for(let i=0;i<14;i++){const a=i*2.4;th.push(B.sph(Math.cos(a)*2.2,4.4+Math.sin(i)*1.1,-18+Math.sin(a)*2.2,.18,"#d02a2a","#801010"))}th.push(B.ring(0,3.2,-18,.75,.14,"#2f7a3a",null,Math.PI/2));B.model("tree",0,-18,{h:9,hide:th});
+  B.tree(17,-25,2,"#e8c84a");B.glow(17,5,-25,7,"#ffe07a");
+    B.disc(-14,-6,3.2,"#05050f");B.glow(-14,.6,-6,4,"#8aa0ff");
+  B.fig({robe:"#a8704a",skin:"#a8704a",model:"adam"},13,-7,0);
+  for(let i=0;i<3;i++)B.fig({robe:"#f4f0ff",skin:"#f4f0ff",glow:"#c8d0ff",wings:1},10+i*2.4,-10.5,0,"bow");
+  B.fig({robe:"#c0301a",skin:"#e0602a",glow:"#ff3a1a",s:1.15,model:"iblis"},17,-9,-.6);
+  B.fig({robe:"#c89a70",skin:"#c89a70",hair:"#3a2010",model:"woman"},-1.6,-15.5,.3);
+  B.fig({robe:"#f8f0d8",glow:"#ffd060",wings:1,s:1.6},0,-31,0,"raise");B.fire(1.2,2.4,-30.4,.6);},
+ pts:[
+ {id:"void",label:"The Dark Waters",pos:[-14,-3],loc:"Before time",t:"Darkness upon the Deep",p:["You stand at the edge of a pool with no bottom. *The earth was without form, and void; and darkness was upon the face of the deep.* Something moves over the water like breath over a page.","Every people will try to write this moment. How do you begin?"],
+  c:[["Write: 'Let there be light'",[2,0,0],"genesis1","You speak, and the pool catches fire with light. One day, then six, each ending *and it was good.* No enemy, no battle, only a voice and a world that obeys it.","raise"],
+     ["Write the Rig Veda's question: 'Who truly knows?'",[0,2,1],"nasadiya","In a language from far to the east, you write a hymn that ends in doubt: whoever made it, perhaps he knows, or perhaps he knows not. Honesty on the very first page.","write"],
+     ["Write it as Egypt's priests do: the world spoken from a god's heart and tongue",[0,1,2],"memphite","Ptah thinks the world in his heart and speaks it with his tongue. Creation by the word, long before John writes: *In the beginning was the Word.*","write"]]},
+ {id:"adam",label:"The Clay Man",pos:[12,-4],loc:"The Garden",t:"The Angels Bow",p:["A man lies shaped from red clay, and breath goes into his nostrils. He opens his eyes and starts naming everything he sees: the lion, the ox, the eagle.","Then a command rings through the garden: let the angels bow before him. Rows of light fold to the ground. One figure, made of smokeless fire, stays standing."],
+  c:[["Bow with the angels",[2,0,0],"iblis","You bow. Iblis's voice burns: *I am better than he. You made me of fire, and him of clay.* He is cast down and swears to lead the clay-children astray until the last day. The Qur'an remembers this, and so does a Jewish book older than it.","bow"],
+     ["Walk up to the one who refused and ask why",[0,0,2],"adameve","'He is younger than me,' Satan says in the Life of Adam and Eve. 'I will not worship one lesser than me. If God is angry, I will set my throne above the stars.' The same refusal is being remembered in many languages.","look"],
+     ["Help Adam name the animals",[0,2,0],"eden","*Whatsoever Adam called every living creature, that was the name thereof.* The Qur'an says God taught Adam the names, and the angels could not answer. To name a thing is the first act of a scribe.","write"]]},
+ {id:"tree",label:"The Tree in the Midst",pos:[0,-13],loc:"The middle of the garden",t:"The Fruit",p:["A serpent is coiled around the trunk, *more subtil than any beast of the field.* A woman stands under the branches with a fruit in her hand. 'You will not surely die,' it whispers. 'You will be as gods, knowing good and evil.'","She eats, gives some to the man, and their eyes are opened."],
+  c:[["Take the fruit from her hand",[0,1,2],"eden","It tastes of everything you will ever write. Shame arrives, then fig leaves, then a voice walking in the cool of the day: *Where art thou?* In the Qur'an both slip, both repent, and both are forgiven. No curse passes to their children.","eat"],
+     ["Kneel at the tree and refuse",[2,0,0],null,"You refuse, and the story happens anyway. Some pages are written whether you want them or not. Cherubim and a turning, flaming sword now guard the way east.","kneel"],
+     ["Ask the serpent about the woman before Eve",[0,1,2],"lilith","The serpent laughs. 'Lilith? She was made from the same earth as him and would not lie beneath him. She spoke the Name and flew.' A medieval story, but people kept telling it.","look"]]}]},
+
+/* ---------- II HERMON ---------- */
+{id:"hermon",rockModel:"granite",n:"II",t:"The Seventh from Adam",sub:"Mount Hermon · 1 Enoch · Book of Giants",
+ sky:["#02030a","#0d1230","#28325c"],fog:["#141a33",20,130],ground:"#7f889e",hemi:["#8090c8","#202030",.75],sun:["#a8baff",.7],fx:"snow",stars:1,bump:.6,spawn:[0,16],portal:[0,-26],
+ intro:["Generations pass. You are born again as Enoch, son of Jared, seventh from Adam. Your father's name means *descent*. He was born in the days when something came down.","The herdsmen whisper about lights on the summit of Hermon, shapes taller than cedars moving among the snows. The women will not draw water after dark."],
+ outro:"In your three hundred and sixty-fifth year you walk into the light at the edge of the field. *And Enoch walked with God: and he was not; for God took him.* Your great-grandson will be named Noah.",
+ build(B){B.mtn(0,-75,45,62,"#3a4058",1);B.mtn(-55,-50,30,40,"#323850",1);B.mtn(55,-58,32,44,"#323850",1);
+  B.scatter(30,(x,z)=>B.rock(x,z,.5+B.r()*1.4,"#5a6278"),6,30);
+  for(let i=0;i<10;i++){const a=i/10*Math.PI*2;B.fig({robe:"#dfe8ff",skin:"#ffffff",glow:"#9ab8ff",wings:1,s:1.9},Math.sin(a)*5.5,-15+Math.cos(a)*5.5,a+Math.PI)}
+  B.fig({robe:"#3a1a10",skin:"#ff8a3a",glow:"#ff5a1a",s:2,model:"azazel",mh:2},0,-15,0);B.fire(-.9,2.6,-14.2,.35);
+  B.fig({robe:"#3a2a20",skin:"#6a4a30",s:3.2,model:"giant"},-18,-1,1.2);B.fig({robe:"#2a1e16",skin:"#5a3a28",s:2.7,model:"giantsit",mh:1.4},-20,3,1.6,"sit");B.fire(-15,0,1,1.1);
+  for(let i=0;i<5;i++)B.ring(16,2+i*1.4,-15,3.4-i*.4,.12,"#ff9a2a","#ff7a1a",Math.PI/2);B.model("tablets",16,-15,{h:2.4,ry:-Math.PI/2,tint:"#203850",hide:[B.box(16,0,-15,2,1,2,"#cfe6ff","#9ad0ff",.6)]});B.glow(16,6,-15,10,"#ffd08a");},
+ pts:[
+ {id:"oath",label:"The Ring of Light",pos:[0,-8],loc:"Summit of Mount Hermon",t:"The Oath on the Mountain",p:["Two hundred beings stand in a ring of cold light. Their leader, Shemyaza, speaks: *I fear ye will not indeed agree to do this deed, and I alone shall have to pay the penalty of a great sin.*","They bind themselves with curses. These are the Watchers, the *sons of God* who saw that the daughters of men were fair. One steps forward with fire in his palm like a coal: Azazel."],
+  c:[["Stay hidden and memorize every name",[0,0,2],"enoch","Shemyaza. Arakiba. Rameel. Kokabiel. Tamiel. Ramiel. Danel. Asael... You carve the chiefs' names into memory the way a mason cuts stone. One day an Ethiopian monk will copy them in Ge'ez.","write"],
+     ["Step into the light and rebuke them",[2,0,0],"gen6","Two hundred faces turn toward you. No one strikes you. They look at you with something worse than anger: pity. 'You are the scribe. Write what you see.'","raise"],
+     ["Follow Azazel and ask what he carries",[0,2,0],"azazel","He shows you how the earth bleeds iron, how a blade is folded, how antimony darkens a woman's eyes. 'They will thank me,' he says. They will not. Within a generation, the swords are in use.","look"]]},
+ {id:"giants",label:"The Giants' Fire",pos:[-13,2],loc:"The lowlands · generations later",t:"The Days of the Giants",p:["The women bear children who are not children: the Nephilim. They grow until the harvests cannot feed them, then they eat the herds, then the herdsmen. *There were giants in the earth in those days.*","The blood cries out from the ground. The Watchers come to you in shame and beg you, a mortal, to carry their petition before God."],
+  c:[["Write their petition and carry it",[0,2,1],null,"You sit by the waters of Dan and read the petition until you fall asleep. In the dream the answer comes like a sentence carved in iron: they will have no peace and no forgiveness.","write"],
+     ["Refuse: 'You chose this. Pray for yourselves.'",[2,0,0],null,"'We cannot,' they whisper. 'Our mouths have been shut before Him.' The record will say you carried the petition anyway. Mercy, it turns out, is part of a scribe's work.","raise"],
+     ["Hear the dream of the giant Ohyah",[0,0,2],"giants","The giant trembles like a child. He dreamed of a great stone tablet plunged into water, its writing scraped away until only three names remained. You know what it means. The waters are coming.","look"]]},
+ {id:"fire",label:"The House of Fire",pos:[13,-11],loc:"Above the firmament",t:"The House of Fire",p:["Winds lift you. You pass through a wall of crystal ringed with tongues of fire into a house hotter than fire and colder than snow. On a throne like crystal sits the Great Glory, whose raiment is whiter than any snow.","*Fear not, Enoch, thou righteous man and scribe of righteousness.* The angel Uriel waits to show you the gates of the sun."],
+  c:[["Learn the gates of the sun and the years of the stars",[0,2,1],"calendar","Six gates in the east and six in the west. Three hundred and sixty-four days, fifty-two weeks exactly. Priests will split over this calendar.","look"],
+     ["Fall on your face in silence",[3,0,0],"taken","Your body trembles, and for the first time your hand has nothing to write. A hand that is not your own lifts you up. Later, you will be taken, not buried.","kneel"],
+     ["Let yourself be raised without a word",[1,0,2],"idris","Another scripture will remember you under another name: Idris, a truthful prophet raised to a high place. Different peoples, different tongues, the same man walking into the light.","raise"]]}]},
+
+/* ---------- III FLOOD ---------- */
+{id:"flood",n:"III",t:"When the Deep Broke Open",sub:"The Flood · Genesis · Gilgamesh · Shatapatha Brahmana",
+ sky:["#05070a","#141e28","#26343e"],fog:["#1a242c",15,120],ground:"#16303c",water:1,hemi:["#7a90a0","#101418",.8],sun:["#9ab0c0",.55],fx:"rain",spawn:[0,14],portal:[0,-36],
+ intro:["You wake to rain hammering on pitch. *The fountains of the great deep* have broken open, and the windows of heaven are open too.","You walk on the water as if it were a floor. Ahead in the dark are three boats, and in each one a man you somehow know."],
+ outro:"*I do set my bow in the cloud.* The colors arch over every boat at once. You step down onto dry ground, and the generations scatter across the earth.",
+ build(B){B.mtn(0,-90,30,46,"#2a2a34",1);B.mtn(-40,-80,20,26,"#22222c");B.mtn(40,-84,22,30,"#22222c");
+  const ak=[B.box(-14,0,-12,11,2.6,4,"#4a3020"),B.box(-14,2.6,-12,7,1.6,3,"#3a2418"),B.box(-14,4.2,-12,7.6,.3,3.6,"#2a180e")];B.model("ark",-14,-12,{len:13,ry:0,y:-.6,hide:ak});
+  const cb=[B.box(14,0,-12,5.5,5.5,5.5,"#3a2a1c")];for(let i=1;i<7;i++)cb.push(B.box(14,i*.78,-9.2,5.6,.06,.1,"#1a120a"));B.model("cubeboat",14,-12,{len:6.5,y:-.4,hide:cb});
+  B.model("fish",0,-27,{len:12,y:-1.2,hide:[B.sph(0,.4,-27,1,"#9aa8b8",null,[6,1.6,2]),B.cone(0,2,-25.2,.35,1.6,"#c0c8d0",-.5)]});B.model("fishboat",0,-21,{len:3.4,y:-.3,ry:.3,hide:[B.box(0,0,-21,2.4,.7,1.2,"#3a2a1a")]});
+  for(let i=0;i<6;i++)B.ring(0,-8,-110,70-i*2.4,.9,["#ff5a5a","#ffaa5a","#fff05a","#7ae07a","#6ab0ff","#a07aff"][i],null,0,.25);
+  B.fig({robe:"#5a4030",beard:"#ddd",model:"elder"},-12,-8.5,0);B.fig({robe:"#5a4a8a",beard:"#222",model:"elder"},12,-8.5,0);B.fig({robe:"#e8d0a0",skin:"#7a5030",beard:"#333",model:"elder"},0,-20,0);
+  B.lightning();},
+ pts:[
+ {id:"noah",label:"Noah's Ark",pos:[-12,-5],loc:"The ark of gopher wood",t:"Noah, Son of Lamech",p:["Three decks, one window, and the warmth and stink of every kind of animal. Noah's face is grey. *And every living substance was destroyed which was upon the face of the ground.*","He walked with God the way you did. Now he is one of the few left who remember the world."],
+  c:[["Pray with Noah's family",[2,0,0],"genflood","Eight souls in the dark, praying into the noise of the rain. The ark rises with the waters and does not break.","kneel"],
+     ["Count the animals: two of each, or seven?",[0,2,0],"floodmem","Two by two, says one verse. Seven pairs of the clean animals, says another. Forty days here, a hundred and fifty there. You are holding two stories braided into one.","write"]]},
+ {id:"utna",label:"The Cube Boat",pos:[12,-5],loc:"The boat of Shuruppak",t:"Utnapishtim the Faraway",p:["His boat is a perfect cube, seven decks high, sealed with bitumen. The god Ea warned him by whispering through a reed wall.","'Even the gods were terrified of the flood they unleashed,' he says. 'They cowered like dogs against the wall of heaven.'"],
+  c:[["Ask him to tell the whole tale",[0,1,1],"gilgamesh","Seven days of storm, then landfall on Mount Nimush. A dove, a swallow, and a raven that never returned. When he sacrificed, the gods crowded around the smell like flies. You think of Noah's window and Noah's birds.","look"],
+     ["Ask why the gods sent the waters",[0,2,0],"atrahasis","'In the older story, humanity was too noisy, and Enlil could not sleep.' Genesis gives a moral reason, violence filling the earth. Babylon's gods just want quiet.","write"]]},
+ {id:"manu",label:"The Great Fish",pos:[0,-17],loc:"Far to the east",t:"Manu and the Fish",p:["A small boat is tied by a rope to the horn of a fish bigger than a hill. Its eye glows under the water like a drowned sun.","Manu says he saved this fish when it was small enough to fit in his palm. Now it is saving him."],
+  c:[["Ride with Manu to the northern mountain",[0,0,2],"manu","The fish tows you through the dark to a northern mountain. Later tradition will call it Matsya, the first descent of Vishnu. Another people remembers the drowning and the rescue.","raise"],
+     ["Lay a hand on the fish and bless it",[1,0,1],"manu","Its scales are cold as starlight. It turns one enormous eye toward you, and you are sure it understands every language you will ever write.","kneel"]]},
+ {id:"sign",label:"The Sign in the Sky",pos:[0,-29],loc:"The mountains of Ararat · Nimush · the north",t:"The Birds and the Bow",p:["All three boats come to rest on mountains. Every one of the three men does the same thing: he opens a window and sends out a bird.","Then a sacrifice, smoke rising, and heaven smelling the sweet savor. Each heaven gives a sign. Which will you write?"],
+  c:[["The bow in the cloud: a covenant with all flesh",[2,0,0],"genflood","*I do set my bow in the cloud, and it shall be for a token of a covenant between me and the earth.* Not only with one people, but with every living creature.","raise"],
+     ["The goddess's lapis necklace, a vow never to forget",[0,0,2],"atrahasis","The mother of the gods lifts her necklace of lapis-lazuli flies to the light and swears by it that she will remember these days forever. A rainbow made of jewels.","look"],
+     ["Write that all three are one memory",[0,2,0],"floodmem","Set side by side, the tablets show their seams: the same birds, the same mountain, the same sacrifice. Every people remembers the drowning, and each tells you what it believes about heaven by explaining why the waters came.","write"]]}]},
+
+/* ---------- IV ABRAHAM ---------- */
+{id:"abraham",rockModel:"sandrock",n:"IV",t:"The Friend of God",sub:"Ur · Moriah · Bakkah · Torah & Qur'an",
+ sky:["#2a1840","#d0703a","#f6c27a"],fog:["#e0a070",25,150],ground:"#c49a62",hemi:["#ffe0b0","#6a4a2a",1.05],sun:["#ffd8a0",1.15],fx:"dust",stars:1,bump:.5,spawn:[0,16],portal:[-8,-30],
+ intro:["Ten generations after the waters, you are born in Ur of the Chaldees, the son of an idol-maker named Terah. Your name is Abram.","Three scriptures will call you father: the Torah, the Gospel and the Qur'an, and each begins your story in a different place."],
+ outro:"You leave sons on both sides of the desert. Their children will quarrel and pray for four thousand years, and every one of them will call you father.",
+ build(B){B.zig(-26,-16,16,"#9a6a3a");B.model("idolshop",-15,0.5,{h:3.8,ry:-Math.PI/2,hide:[B.box(-15,0,0,5,3,4,"#a87a4a")]});
+  for(let i=0;i<7;i++){const ix=-15+i*.75-2.2,ih=.9+B.r()*.6;const pa=B.cyl(ix,0,-2.6,.16,.22,ih,i%2?"#d8b040":"#8a7a6a"),pb=B.sph(ix,1.2+B.r()*.3,-2.6,.16,i%2?"#d8b040":"#8a7a6a");B.model("idol",ix,-2.6,{h:ih+.25,ry:-Math.PI/2,tint:i%2?"#a07010":null,hide:[pa,pb]})}
+  B.mtn(18,-22,10,9,"#9a7a5a");for(let i=0;i<4;i++)B.rock(14.5+i*.5,-14+B.r(),.5,"#7a6a5a");B.model("altar",15,-14,{h:1.5,ry:-Math.PI/2,hide:[B.box(15,.5,-13.6,2,.5,.8,"#6a4a2a")]});
+  const kb=[B.box(0,0,-24,3,3.4,3,"#141010"),B.box(0,2.2,-24,3.04,.4,3.04,"#c8a040","#604010",.3)];B.model("kaaba",0,-24,{h:3.8,ry:-Math.PI/2,hide:kb});B.model("well",4,-20.5,{h:2.6,ry:-Math.PI/2,hide:[B.cyl(4,0,-20.5,.8,.9,.7,"#8a7a6a")]});
+  B.scatter(18,(x,z)=>B.palm(x,z,.9+B.r()*.5),10,30);
+  B.fig({robe:"#6a4a8a",beard:"#ccc",model:"elder"},-12,-4.5,.4);B.fig({robe:"#e0d0b0",s:.75,model:"boy",mh:1.35},14.8,-12.6,0,"kneel");B.fig({robe:"#5a7a8a",hair:"#2a1a10",model:"woman"},3.4,-17.5,-.6);},
+ pts:[
+ {id:"idols",label:"Terah's Idol Shop",pos:[-12,-1],loc:"Ur of the Chaldees",t:"The Idols of Terah",p:["Your father's shop is full of gods: clay, wood, bronze and stone, with painted eyes. Customers bow to them and pay for them.","One night on the roof you watch a star rise and set, then the moon, then the sun. *I love not those that set.*"],
+  c:[["Smash the idols and put the axe in the biggest one's hand",[2,0,0],"ibrahim","Wood cracks and clay shatters. 'Ask him who did it,' you tell the crowd, pointing at the largest idol. They throw you into a furnace. *O fire, be coolness and peace for Ibrahim.* You walk out unburned. The Qur'an and the rabbis both remember this night.","smash"],
+     ["Burn your father's wooden god and listen",[0,0,2],"apocabraham","The idol crackles in the flames. A voice calls your name. The angel Yahoel will lift you up to see Azazel, the fallen Watcher from Hermon, cursed in the form of a bird. Only Slavonic will keep this book.","raise"]]},
+ {id:"moriah",label:"The Mountain of Moriah",pos:[13,-10],loc:"The land of Moriah",t:"The Binding",p:["*Take now thy son, thine only son.* Three days of walking, and the boy carries the wood. 'Father, here is the fire and the wood, but where is the lamb?'","You bind him on the altar and raise the knife."],
+  c:[["Raise the knife, trusting",[2,0,0],"akedah","*Abraham, Abraham: lay not thine hand upon the lad.* A ram is caught by its horns in a thicket. Jews will call this the Binding. Christians will see in it a Father and a Son. Muslims will remember it every Eid al-Adha.","raise"],
+     ["Ask which son is on the altar",[0,2,1],"akedah","Genesis says Isaac. The Qur'an does not name him, and has the son say: *Father, do as you are commanded.* Most Muslim scholars say it was Ishmael. The knife is the same in every telling.","look"]]},
+ {id:"house",label:"The House in the Valley",pos:[0,-18],loc:"A barren valley · Bakkah",t:"Hagar and the Spring",p:["An Egyptian slave woman named Hagar runs back and forth between two hills, seven times, while her baby cries of thirst in the sand.","Years later, you and that boy, Ishmael, lift stones in the same valley to raise the foundations of a House."],
+  c:[["Raise the House with Ismail",[2,0,1],"kaaba","*Our Lord, accept this from us.* A plain cube of stone in a valley with no crops. Millions will one day circle it and run between Safa and Marwa the way Hagar ran.","raise"],
+     ["Kneel beside Hagar at the spring",[1,2,0],"hagar","Water bursts from the sand. Muslim tradition calls it Zamzam. Genesis says God heard the voice of the lad. Hagar is the only person in scripture who names God: *Thou God seest me.*","kneel"]]}]},
+
+/* ---------- V EGYPT & SINAI ---------- */
+{id:"egypt",rockModel:"sandrock",n:"V",t:"The Man Drawn from Water",sub:"Egypt & Sinai · Exodus · Book of the Dead · Jubilees",
+ sky:["#c0601a","#f0b04a","#fbe2a0"],fog:["#f0cc8a",30,170],ground:"#d8b070",hemi:["#fff0c0","#8a6a3a",1.05],sun:["#fff2c8",1.25],fx:"dust",bump:.3,spawn:[0,16],portal:[0,-34],
+ intro:["Centuries later, you are born in a basket of bulrushes daubed with pitch: a little ark. Pharaoh's daughter draws you out of the Nile and names you Moses.","You grow up *learned in all the wisdom of the Egyptians*, while the Hebrews make bricks under the whip."],
+ outro:"Forty years of sand bury a whole generation. You die on Nebo, looking at a land you will never enter, and *no man knoweth of his sepulchre unto this day.*",
+ build(B){B.water(0,9,120,6,"#3a8aa0",.35);B.pyr(-32,-38,13,"#d8b878");B.pyr(-15,-46,17,"#c8a868");B.pyr(-46,-52,10,"#d0b070");
+  {const eh=[];for(let i=0;i<6;i++)eh.push(B.cyl(-17+(i%3)*3,0,-6-Math.floor(i/3)*4.5,.4,.45,4.5,"#c8b080"));B.model("egypthall",-14,-8.2,{len:10,ry:-Math.PI/2,hide:eh})}B.box(-14,4.5,-8.2,8,.6,6,"#b89a68").visible=false;
+  B.model("maat",-14,-7.6,{h:2.4,ry:-Math.PI/2,hide:[B.cyl(-14,0,-7.6,.08,.08,2,"#4a3a1a"),B.box(-14,2,-7.6,2.4,.1,.1,"#4a3a1a"),B.cyl(-15.2,1.2,-7.6,.4,.3,.12,"#d8b040"),B.cyl(-12.8,1.2,-7.6,.4,.3,.12,"#d8b040")]});
+  B.fig({robe:"#1a1410",skin:"#14100c",ears:1,model:"anubis",mh:2.1},-16.2,-6,.6);
+  const bb=B.tree0(13,-7,.7,"#3a6a2a");B.model("bush",13,-7,{h:2.6,hide:[bb,bb.userData.trunk]});B.fire(13,1.2,-7,1);B.mtn(26,-52,24,30,"#4a4040");B.model("cloud",26,-52,{len:34,y:24,hide:[B.sph(26,30,-52,1,"#18161a",null,[18,4,14])]});B.lightning();
+  B.model("passhouse",-2,-19.5,{h:3.4,ry:-Math.PI/2,hide:[B.box(-2,0,-19.5,4,3,3,"#b89060"),B.box(-2,2.6,-17.95,1.8,.3,.12,"#a00a0a"),B.box(-2,0,-17.95,1.4,2.2,.1,"#1a0a04")]});
+  B.model("calf",12,-29,{h:2.6,ry:-Math.PI/2,hide:[B.box(12,1,-29,1.6,.9,.7,"#f0c040","#a07010",.5),B.box(12.9,1.6,-29,.6,.6,.5,"#f0c040","#a07010",.5),B.cyl(12,0,-29,.6,.7,1,"#8a7a6a")]});
+  B.mtn(-24,-28,7,5,"#a88a5a");B.scatter(14,(x,z)=>B.palm(x,z,1),12,30);
+  B.fig({robe:"#e8e0d0",beard:"#bbb",model:"elder"},10.5,-27,.4);},
+ pts:[
+ {id:"hall",label:"The Hall of Two Truths",pos:[-12,-3],loc:"A temple archive of Memphis",t:"The Weighing of the Heart",p:["A priest unrolls a papyrus. A dead man's heart sits on a scale against a single feather while a jackal-headed god watches the needle. The man swears: *I have not killed. I have not stolen. I have not lied.*","Beside it lies a forbidden hymn by Akhenaten, praising one god alone. And outside, the brickfields."],
+  c:[["Study the confession of the dead",[1,2,0],"bookofdead","*I have not killed. I have not stolen.* You see commandments here before Sinai. Egypt already believed the gods judge the heart.","write"],
+     ["Read the forbidden hymn to the Aten",[0,1,2],"aten","The sun disc reaches down with rays that end in little hands. *O LORD, how manifold are thy works!* You will hear this hymn again in a Hebrew psalm.","look"],
+     ["Go to the brickfields and stop a taskmaster's whip",[1,0,1],null,"An overseer is beating a Hebrew slave. You look this way and that. *He slew the Egyptian, and hid him in the sand.* The Torah's greatest prophet starts out as a fugitive with blood on his hands. You run to Midian for forty years.","smash"]]},
+ {id:"bush",label:"The Burning Bush",pos:[12,-3],loc:"Horeb, the mountain of God",t:"The Fire That Does Not Consume",p:["A thornbush burns and does not burn up. From the middle of the fire a voice calls your name twice: *Moses, Moses.*","You ask the question every scribe after you will ask: *What is his name?* The answer is barely a name at all: *I AM THAT I AM.*"],
+  c:[["Take off your sandals and kneel",[2,0,0],"iam","*Put off thy shoes from off thy feet, for the place whereon thou standest is holy ground.* You will never again stand anywhere without wondering whether it is holy.","kneel"],
+     ["Argue: 'I am slow of speech'",[0,2,0],"iam","You argue with God, and you keep arguing. God grows angry, and then gives you your brother Aaron to speak for you. You have learned that God can be argued with.","raise"],
+     ["Stare into the flame to see what speaks",[0,0,2],"iam","*The angel of the LORD appeared unto him in a flame of fire*, and then it is God who speaks. Inside the flame you see something like a man and like a wing, and then your eyes fill with tears.","look"]]},
+ {id:"pass",label:"The Marked Door",pos:[-2,-14],loc:"Egypt · the fourteenth of Nisan",t:"The Night of the Destroyer",p:["Ten blows fall on Egypt, down to a darkness you can touch. Each time Pharaoh's heart is hardened, and the text says plainly that God hardened it.","At midnight a cry goes up across Egypt, from *the firstborn of Pharaoh that sat on his throne unto the firstborn of the captive that was in the dungeon.*"],
+  c:[["Mark the doorpost and keep the Passover",[2,0,0],"passover","Unleavened bread, bitter herbs, staff in hand. Your people will keep this night for three thousand years, and a rabbi from Nazareth will keep it on the last night of his life.","write"],
+     ["Walk the streets and weep for the dead",[0,2,1],null,"A mother rocking a boy who does not breathe. You will write this night as a triumph and never forget that it was also grief. The Talmud will remember God silencing the angels as Egypt drowned: *My creatures are drowning, and you sing?*","weep"],
+     ["Watch the destroyer pass over",[0,0,2],"jubilees","Exodus calls it simply *the destroyer*. A later book names its master, Mastema, prince of the spirits. Something tall and faceless moves down the street, pausing at each door.","look"]]},
+ {id:"sinai",label:"The Foot of Sinai",pos:[10,-24],loc:"Mount Sinai · the third month",t:"The Tablets and the Calf",p:["Sinai smokes like a furnace. You climb into *the thick darkness where God was* for forty days, and you come down with tablets written by the finger of God.","You hear singing. The people have melted their earrings into a golden calf, and your own brother Aaron built its altar."],
+  c:[["Smash the tablets at the foot of the mountain",[1,2,0],"calf","Stone breaks. You grind the calf to powder and make them drink it. *Who is on the LORD's side?* The Levites draw swords, and about three thousand fall. You leave it all in the record. The Bible does not soften its founders.","smash"],
+     ["Remember what the Angel dictated in the cloud",[0,0,2],"jubilees","In the cloud, the Angel of the Presence had dictated the whole history of the world to you, counted in jubilees of forty-nine years. Fifteen copies of it will be found in caves by the Dead Sea.","write"],
+     ["Compare these laws with Hammurabi's stone",[0,2,0],"hammurabi","An eye for an eye, an ox that gores, a thief at night. The cases are old. What is new is the frame: a covenant, given by a God who freed slaves.","look"]]},
+ {id:"nebo",label:"Mount Nebo",pos:[-21,-22],loc:"The top of Pisgah",t:"The Land You Will Not Enter",p:["A hundred and twenty years old, your eyes undimmed, you look across the Jordan at a land you will never enter.","Here is the strangest page you will write: the account of your own death. If you are buried, who wrote that line?"],
+  c:[["Let Joshua finish the last eight verses",[1,1,0],"deut34","Your apprentice takes the reed. The rabbis will say he wrote the ending. Others will say you wrote it yourself, at God's dictation, in tears instead of ink.","kneel"],
+     ["Look up: Michael and the devil are arguing over your body",[0,0,2],"assumption","Two shapes stand over your body, one bright, one smoldering. Michael will not rebuke the devil himself: *The Lord rebuke thee.* A New Testament letter will quote this fight from a book that was later lost.","look"],
+     ["Accept that many hands will finish your books",[0,2,0],"documentary","Priests in exile and scribes in Persia will weave and edit the five books long after you. Tradition will call them yours, and in a sense they will be, because you are all of those hands.","write"]]}]},
+
+/* ---------- VI JERUSALEM ---------- */
+{id:"david",flora:"olive",n:"VI",t:"The Sweet Singer of Israel",sub:"Elah · Jerusalem · Psalms · Kebra Nagast · Qur'an 27",
+ sky:["#4a7ac0","#a8cce8","#f0ead0"],fog:["#d8e0d0",30,160],ground:"#8a9a4a",hemi:["#fff8e0","#4a5a2a",1.05],sun:["#fff2d0",1.15],fx:"light",bump:.6,spawn:[0,16],portal:[0,-36],
+ intro:["Three hundred years later, you are the youngest of Jesse's eight sons, left out in the field with the sheep. The prophet Samuel pours a horn of oil over your head.","Your name is David. The Psalms will carry your name, the Qur'an will call them the Zabur, and every scripture will remember your sin."],
+ outro:"The kingdom splits after Solomon. Prophets shout in the gates, Assyria swallows the north, and the Temple stands for four centuries, until Babylon comes.",
+ build(B){B.water(-14,-6,40,1.8,"#6ab0c8",.6);for(let i=0;i<5;i++){const tx=-25+i*3.6;B.model("tent",tx,-18,{h:2.6,ry:[.25,-.3,.15,-.2,.35][i],hide:[B.cone(-24+i*3,0,-18,1.4,2.2,"#d8c8a0")]})}
+  B.model("palace",14,-4,{len:10,ry:-Math.PI/2,hide:[B.box(14,0,-4,7,4.5,6,"#d8c8a8"),B.box(14,4.5,-4,7.4,.4,6.4,"#b8a888")]});
+  B.scatter(14,(x,z)=>B.tree(x,z,1.2,"#2f5a2a"),0,0,[-18,-24,8]);
+  B.model("temple",12,-30,{h:9,ry:-Math.PI/2,hide:[B.box(12,0,-30,8,6,10,"#e0d0a0"),B.box(12,6,-30,8.6,.6,10.6,"#c8a040","#604010",.25)]});[10,14].forEach(px=>B.model("bronzepillar",px,-24.6,{h:5.6,hide:[B.cyl(px,0,-24.6,.4,.4,5,"#b08a40")]}));
+  {const cw=B.wall(0,-40,70,4,0,"#c8b890");[-26.25,-8.75,8.75,26.25].forEach((wx,i)=>B.model("citywall",wx,-40,{len:17.8,ry:0,hide:i?[]:[cw]}))}B.scatter(26,(x,z)=>B.model("sheep",x,z,{h:.95,ry:(x*7.3+z*3.1)%6.28,hide:[B.sph(x,.3,z,.35,"#f4f0e4",null,[1.3,.8,1])]}),8,30);
+  B.fig({robe:"#6a5a3a",skin:"#7a5a3a",helmet:1,s:2.6,tag:"goliath",model:"goliath"},-14,-11,0);
+  B.fig({robe:"#3a2a5a",beard:"#555",model:"davidgrief",mh:1.15},-17,-23,.6,"weep");B.fig({robe:"#1a5a6a",hair:"#1a0a05",crown:1,model:"woman"},14,-23,-.5);B.fig({robe:"#8a2a6a",beard:"#333",crown:1,model:"solomon"},10.5,-23,.5);},
+ pts:[
+ {id:"elah",label:"The Valley of Elah",pos:[-12,-5],npc:"goliath",loc:"The Valley of Elah",t:"The Giant of Gath",p:["A Philistine champion nearly ten feet tall, armored in bronze, has mocked the armies of Israel for forty days. King Saul's soldiers will not move.","You have a shepherd's sling and a brook full of stones."],
+  c:[["Take five smooth stones and sling one",[2,0,0],null,"One stone, one sling, one crack like a branch snapping. Goliath falls on his face, and you cut off his head with his own sword. The scripture does not look away.","throw"],
+     ["Write the song of the small shepherd",[0,1,2],"psalm151","*I was small among my brothers.* You sing of making a harp with your own hands and of the giant's head. The Greek Bible will keep this psalm. Most Western Bibles will drop it.","write"],
+     ["Notice another verse says Elhanan killed Goliath",[0,2,0],"elhanan","A later scroll credits a man named Elhanan. Another scribe will patch it to read 'the brother of Goliath.' You start keeping track of the seams.","write"]]},
+ {id:"roof",label:"The King's Rooftop",pos:[13,0],loc:"Jerusalem · the king's house",t:"The Rooftop",p:["You are king. In spring, when kings go out to war, you stay home. From your roof you see a woman bathing: *Bathsheba, the wife of Uriah the Hittite*, one of your own mighty men at the front. You send for her anyway.","When she conceives, you send Uriah his own death warrant: *Set ye Uriah in the forefront of the hottest battle.* Then the prophet Nathan comes: *Thou art the man.*"],
+  c:[["Fall down and confess",[2,0,0],"bathsheba","You do not have the prophet killed. You break. *Create in me a clean heart, O God.* The child dies anyway. Some things are not undone by repentance.","kneel"],
+     ["Make sure this is never cut from the record",[0,2,0],"bathsheba","You order every word written down. Centuries later the Chronicler will retell your reign and quietly leave Bathsheba out. Samuel will keep it.","write"]]},
+ {id:"oak",label:"The Oak of Ephraim",pos:[-14,-19],loc:"The forest of Ephraim",t:"O Absalom, My Son",p:["Your son Absalom raises an army against you and drives you weeping from Jerusalem. In this forest his long hair catches in an oak, and Joab drives three darts into his heart.","*O my son Absalom, my son, my son Absalom! would God I had died for thee.* In the dark that follows, you write a psalm that begins with a scream."],
+  c:[["Write: 'My God, my God, why hast thou forsaken me?'",[1,0,2],"psalm22","Pierced hands and feet, and men casting lots for clothing. You do not know why those images come to you. A thousand years later, a man nailed to a Roman cross will gasp out your first line.","weep"],
+     ["Write your laments into the Book of Jasher",[0,2,0],"jasher","*How are the mighty fallen!* You set your laments into the Book of the Upright. The Bible will quote it twice and then lose it forever.","write"],
+     ["Sing like the old hymns to the rider of the clouds",[0,1,1],"baal","The Canaanite poets praised Baal riding the storm and crushing the seven-headed serpent. You give their thunder to your God: *The voice of the LORD is upon the waters.*","raise"],
+     ["Sing so that every nation can hear",[1,1,0],"zabur","Your psalms will be sung in Hebrew, Greek, Ge'ez, Latin and English. A later scripture will honor them as the Zabur given to Dawud.","raise"]]},
+ {id:"temple",label:"Solomon's Temple",pos:[12,-20],loc:"Jerusalem · c. 950 BCE",t:"The Queen from the South",p:["Your son Solomon has built the Temple, cedar and gold with two bronze pillars. Now a queen arrives from the south with a caravan of spices, gold and riddles.","Three scriptures tell what happened next, and none of them tell it the same way."],
+  c:[["Follow her son home to Ethiopia",[0,0,2],"kebra","Ethiopian tradition calls her Makeda. Her son by Solomon, Menelik, carries the Ark of the Covenant south. Monks in Aksum still say it is behind their chapel doors.","look"],
+     ["Watch the queen at the glass floor",[0,2,1],"bilqis","In the Qur'an, a hoopoe brings news of her, and her throne is moved in the blink of an eye. At the palace she lifts her hem, thinking the glass is water, and then submits to the Lord of the worlds.","look"],
+     ["Write Solomon's love songs and his despair",[1,2,0],"songs","*Vanity of vanities; all is vanity.* And on another page, love poetry so frank the rabbis argued over whether it was holy. Wisdom includes both.","write"]]}]},
+
+/* ---------- VII BABYLON ---------- */
+{id:"babylon",flora:"willow",n:"VII",t:"By the Rivers of Babylon",sub:"The Exile · Ezekiel · Enuma Elish · Avesta",
+ sky:["#1a2a5a","#d87a3a","#f6c070"],fog:["#d89060",25,160],ground:"#b08a5a",hemi:["#ffe0b0","#5a3a2a",1],sun:["#ffd0a0",1.1],fx:"dust",bump:.35,spawn:[0,16],portal:[-6,-34],
+ intro:["587 BCE. Jerusalem burns. You are a priest's son named Ezekiel, marched east in chains. The king is made to watch his sons slaughtered, and then his eyes are put out.","By the canals of Babylon, the exiles will gather what they remember and weave it into one book."],
+ outro:"Cyrus's decree sends the exiles home, but your soul does not go home. It drifts east, past the edge of every map you know, into an age when the whole world seems to wake up at once.",
+ build(B){B.zig(0,-52,26,"#8a5a30");B.water(-26,0,8,90,"#3a7a9a",.35);B.scatter(10,(x,z)=>B.tree(x,z,1,"#5a7a3a"),0,0,[-16,2,7]);
+  const ig=[B.box(-18,0,-20,3,8,3,"#1f4aa8"),B.box(-11,0,-20,3,8,3,"#1f4aa8"),B.box(-14.5,6,-20,10,2,3,"#1f4aa8")];for(let i=0;i<4;i++)ig.push(B.sph(-17+i*1.7,7,-18.4,.3,"#f0c040","#806010"));B.model("ishtar",-14.5,-20,{h:10,ry:-Math.PI/2,hide:ig});
+  for(let k=0;k<2;k++){B.ring(13+k*3,3,-3,1.6,.1,"#f3dc9c","#c8a040",0,1,"spin");B.ring(13+k*3,3,-3,1.6,.08,"#f3dc9c","#c8a040",Math.PI/2,1,"spin2")}B.glow(14.5,3.5,-3,9,"#ffcf7a");B.box(14.5,5.6,-3,2,.15,1,"#4a6ae0","#2a3ab0",.6);
+  for(let i=0;i<4;i++)B.fig({robe:"#d8c080",beard:"#333",hat:1,model:"elder"},-3+i*2,-27,0);
+  B.model("firealtar",16,-23,{h:2.6,ry:-Math.PI/2,hide:[B.cyl(16,0,-23,.9,1.1,1.4,"#d8d0c0")]});B.fire(16,2.45,-23,.8);B.fig({robe:"#f4f0e8",beard:"#ddd",hat:1,model:"elder"},17.5,-21,-.8);B.fig({robe:"#5a4a3a",beard:"#444",model:"sage",mh:1.05},-12,4,0,"sit");},
+ pts:[
+ {id:"willow",label:"The Willows",pos:[-12,1],loc:"The canals of Babylon",t:"How Shall We Sing?",p:["Your captors laugh and say, sing us one of your songs of Zion. A man near you hangs his harp on a willow.","Someone else sings the most terrible verse in the Psalms: *Happy shall he be, that taketh and dasheth thy little ones against the stones.*"],
+  c:[["Write it down: rage is also prayer",[0,2,1],"ps137","You do not clean it up. The scriptures will keep an exile's fury beside its beauty, and readers for twenty-five centuries will have to decide what to do with it.","write"],
+     ["Hang your harp on the willows and keep silent",[2,0,0],null,"*How shall we sing the LORD's song in a strange land?* Your silence is its own psalm.","kneel"]]},
+ {id:"chebar",label:"The River Chebar",pos:[13,1],loc:"By the river Chebar · fifth year of exile",t:"Wheels Within Wheels",p:["The heavens open. A whirlwind comes out of the north with four living creatures, each with four faces, and wheels beside them, *a wheel in the middle of a wheel*, their rims full of eyes.","Above them is a sapphire throne. A hand holds out a scroll written on both sides with lamentations and woe: *eat this roll.*"],
+  c:[["Eat the scroll",[1,0,2],"ezekiel","It tastes like honey, then turns bitter in your belly. The words are inside you now.","eat"],
+     ["Measure every detail of the vision",[0,2,1],"ezekiel","You record every wing, face and gleam. The rabbis will forbid teaching this chapter except to one wise student at a time, and Jewish mysticism will grow out of your notes.","write"],
+     ["Lie on your side for 390 days as a sign",[2,0,0],null,"You act out the siege with your own body. The exiles think you are mad. You have become a living scroll.","kneel"]]},
+ {id:"akitu",label:"The Great Ziggurat",pos:[0,-22],loc:"Babylon · festival of Akitu",t:"Who Will Write the Beginning?",p:["Marduk's priests chant the Enuma Elish: the god splits the sea-dragon Tiamat like a fish for drying and makes the sky from half her body and the earth from the other half.","Around you, exiled scribes are weaving their memories into one book. Someone has to write the beginning, and someone has to give the exiles courage."],
+  c:[["Write 'In the beginning God created': no battle, only a word",[1,2,0],"enuma","*Darkness was upon the face of the deep.* The deep, tehom, is a cousin of Tiamat, but it does not fight back. Your answer to Babylon is calm: no dragon has to die for the world to exist.","write"],
+     ["Tell the story of the young man in the lions' den",[2,0,0],"daniel","A Jewish youth at a pagan court who prays toward Jerusalem three times a day, whatever the law says. The lions do not touch him. Exiles need stories like this more than bread.","raise"],
+     ["Hail Cyrus of Persia as God's anointed",[1,1,0],"cyrus","*Thus saith the LORD to his anointed, to Cyrus.* A pagan king called mashiach. The scandal of that verse is that God works through outsiders.","raise"]]},
+ {id:"magi",label:"The Fire of the Magi",pos:[14,-19],loc:"The Persian camp · 539 BCE",t:"The Wise Lord",p:["Cyrus takes Babylon without a siege. Among the Persians are priests called magi, tending a fire that must never go out.","An old magus tells you of Zarathustra, who heard the Wise Lord, Ahura Mazda: of a spirit of the Lie, a bridge to paradise, and the dead rising at the end of time."],
+  c:[["Learn their teaching",[0,1,2],"zoroaster","Good thoughts, good words, good deeds, and a final renovation of the world. 'Paradise' is Persian for a walled garden. Ideas like these will grow in your people's books for centuries.","look"],
+     ["Keep to the One God of Israel",[2,0,0],null,"*I form the light, and create darkness: I make peace, and create evil: I the LORD do all these things.* Isaiah writes it with Persia in mind. There is no second god for you.","raise"]]}]},
+
+/* ---------- VIII THE EAST ---------- */
+{id:"east",flora:["gtree","olive"],n:"VIII",t:"The Turning of the Ages",sub:"India & China · Upanishads · Dhammapada · Tao Te Ching · Gita",
+ sky:["#3a5a6a","#a8c8b8","#eef0d8"],fog:["#c8d8c0",22,140],ground:"#5a7a3a",hemi:["#f0fff0","#3a4a2a",1.05],sun:["#fff6dc",1],fx:"light",bump:.5,spawn:[0,16],portal:[0,-34],
+ intro:["Around 500 BCE, you walk the Ganges plain, the Himalayan passes and the western gate of China. Wherever you go, people are asking the same questions in different words.","The prophets of Israel, the Buddha, the sages of the Upanishads, Confucius and Laozi all lived within a few centuries of one another."],
+ outro:"You carry the salt, the empty bowl and the five thousand characters west with you. In Judea, a Greek king is about to put a statue of Zeus in the Temple.",
+ build(B){B.mtn(0,-95,40,60,"#6a7a8a",1);B.mtn(-55,-80,30,45,"#5a6a7a",1);B.mtn(55,-85,32,48,"#5a6a7a",1);
+  const bt=B.tree0(-16,-13,2.8,"#3a6a2a");B.model("bodhi",-16,-13,{h:10,hide:[bt,bt.userData.trunk]});B.fig({robe:"#d8902a",skin:"#c08a5a",model:"buddha",mh:1.15},-14.5,-11.5,.5,"sit");B.water(-24,0,10,80,"#6aa8b8",.55);
+  B.model("gate",16.5,-15,{len:9,ry:-Math.PI/2,hide:[B.box(14,0,-15,1,5,1,"#8a2a1a"),B.box(19,0,-15,1,5,1,"#8a2a1a"),B.box(16.5,5,-15,8,.6,2,"#2a2a2a"),B.box(16.5,5.6,-15,6,.5,1.6,"#2a2a2a")]});[4,29].forEach(wx=>B.model("frontwall",wx,-15,{len:14,ry:0,hide:[B.wall(wx,-15,14,3,0,"#9a8a7a")]}));
+  B.model("ox",16.8,-11,{h:1.7,hide:[B.box(16.5,.7,-11,2,1,.8,"#3a3a3a"),B.box(17.7,1.2,-11,.6,.6,.5,"#3a3a3a")]});B.fig({robe:"#f0ece0",beard:"#eee",model:"elder"},15,-11,.6);
+  B.fire(0,0,-27,1);for(let i=0;i<3;i++){const a=i*2.1;B.fig({robe:"#e8a040",skin:"#9a6a40",beard:"#ccc",model:"sage",mh:1.05},Math.sin(a)*2.4,-27+Math.cos(a)*2.4,a+Math.PI,"sit")}
+  B.scatter(22,(x,z)=>B.tree(x,z,1+B.r(),"#2f5a2a"),10,30);},
+ pts:[
+ {id:"bodhi",label:"The Bodhi Tree",pos:[-12,-8],loc:"Bodh Gaya · c. 5th century BCE",t:"The One Who Woke Up",p:["A thin prince who gave up his palace sits under a fig tree and vows not to rise until he understands suffering. The tempter Mara throws storms, armies and his own daughters at him.","At dawn he touches the earth with one hand and calls it as his witness. He is awake. They call him Buddha."],
+  c:[["Sit beside him and breathe",[2,0,1],"dhammapada","He does not speak of God. He speaks of the mind: *All that we are is the result of what we have thought.* Craving is the fire, and there is a way to let it go out.","kneel"],
+     ["Ask him who made the world",[0,2,0],"axial","He answers with a parable: a man shot with a poisoned arrow refuses to let anyone pull it out until he knows who shot it. Some questions do not heal anyone. These centuries are echoing one another.","look"]]},
+ {id:"gate",label:"The Western Pass",pos:[14,-8],loc:"Hangu Pass · legend",t:"The Old Master on the Ox",p:["An old archivist rides west on a water buffalo, leaving an empire he says has forgotten the Way. The gatekeeper will not let him pass until he writes down what he knows.","He writes five thousand characters and rides into the west. No one sees him again."],
+  c:[["Copy the first line",[0,2,1],"taoteching","*The Tao that can be trodden is not the enduring and unchanging Tao.* A scripture that begins by warning you that words cannot hold it. The reed grows lighter in your hand.","write"],
+     ["Bow and let him pass",[1,1,0],null,"Water yields and still wears down stone, he says. You will think of him when a carpenter tells you to turn the other cheek.","bow"]]},
+ {id:"forest",label:"The Forest Sages",pos:[0,-22],loc:"The forests of the Ganges",t:"Thou Art That",p:["By a fire in the forest, a teacher drops salt into a bowl of water and asks his son to find it. The boy cannot see it, but every sip is salty.","Somewhere far off on a battlefield, a charioteer who is a god speaks to a warrior who has thrown down his bow."],
+  c:[["Taste the water with the boy",[0,1,2],"upanishad","*Tat tvam asi*: thou art that. The self you are searching for and the ground of everything are the same salt in the same water.","kneel"],
+     ["Hear Krishna speak to Arjuna",[1,1,1],"gita","Do your duty without clinging to its fruits. The self is never born and never dies. Then the charioteer opens like a sky full of suns, and the warrior trembles.","look"]]}]},
+
+/* ---------- IX JUDEA ---------- */
+{id:"judea",n:"IX",t:"The Caves by the Salt Sea",sub:"Judea · Sirach · Maccabees · Dead Sea Scrolls",
+ sky:["#5a6a8a","#d8a878","#f4d8a8"],fog:["#e0c09a",25,160],ground:"#b8946a",hemi:["#fff0d8","#6a4a2a",1.05],sun:["#fff0d0",1.1],fx:"dust",bump:.5,spawn:[0,16],portal:[-10,-30],
+ intro:["Alexander has conquered the world, and the world now speaks Greek. In Jerusalem you study under Jesus ben Sira, a scribe who signs his own name to his book.","Soon a king named Antiochus will call himself Epiphanes, 'god made manifest,' and the Temple will be defiled."],
+ outro:"Rome comes, then Herod, then a census. In a small town in Galilee, a young woman named Mary is expecting a child.",
+ build(B){B.model("zeustemple",-14,-16,{len:10,ry:-Math.PI/2,hide:[B.box(-14,0,-17,9,5,8,"#d0c098")]});for(let i=0;i<5;i++)B.cyl(-17.6+i*1.8,0,-12.8,.3,.3,5,"#e0d0a8").visible=false;B.fig({robe:"#e0c060",skin:"#e0c060",glow:"#806020",s:2.2,beard:"#d0a040",model:"zeus",mh:2},-14,-12,0);B.fire(-11,0,-11,.6);
+  B.model("sirahouse",14,-6.5,{h:4.4,ry:-Math.PI/2,hide:[B.box(14,0,-6,6,3,5,"#c8b088")]});B.model("desk",13,-2.4,{len:2.6,ry:-Math.PI/2,hide:[B.box(13,0,-2.4,2.4,.9,1,"#6a4a2a"),B.cyl(13,.9,-2.4,.12,.12,.9,"#efe4c8",8,null,Math.PI/2)]});
+  const qm=[B.box(8,0,-34,30,9,4,"#9a6a44")];for(let i=0;i<5;i++)qm.push(B.sph(-2+i*5,3+(i%2)*2.5,-31.9,.9,"#1a0c06",null,[1,.8,.3]));for(let i=0;i<6;i++)qm.push(B.cyl(3+i*.8,0,-27,.28,.22,.9,"#c8a878"));B.model("qumran",8,-32,{len:18,ry:-Math.PI/2,hide:qm});
+  B.water(28,-50,50,40,"#8ab0be",.2);B.fig({robe:"#4a3a6a",beard:"#bbb",model:"sage",mh:1.05},15.5,-3,-.4,"sit");B.fig({robe:"#f0ece0",beard:"#999",model:"elder"},6,-26,0);},
+ pts:[
+ {id:"sira",label:"The House of Instruction",pos:[13,-1],loc:"Jerusalem · c. 180 BCE",t:"In Praise of the Scribe",p:["Your teacher taps the table. The farmer, the smith and the potter keep the world going, he says, but the one who gives his mind to the law of the Most High seeks out the wisdom of all the ancients.","He is describing you, across every life."],
+  c:[["Sign your name to the book, as he does",[0,2,0],"sirach","*Jesus the son of Sirach of Jerusalem.* Almost no other biblical writer signs his work. His grandson will translate it in Egypt, and many Bibles will leave it out.","write"],
+     ["Write Wisdom as a woman, the breath of God",[1,1,1],"wisdomsol","In Alexandria, a Greek-speaking Jew writes in Solomon's name: Wisdom is the radiance of eternal light, and the souls of the righteous are in the hand of God.","write"]]},
+ {id:"abom",label:"The Abomination",pos:[-12,-9],loc:"Jerusalem · 167 BCE",t:"The Abomination of Desolation",p:["Antiochus has set up an altar to Zeus in the Temple and sacrificed swine on it. Circumcision is punished by death.","You watch a mother and her seven sons tortured one by one for refusing pork. Each dies speaking of the resurrection. In the hills, the Maccabees, 'the Hammers', have begun to fight."],
+  c:[["Join the Hammers",[1,1,0],"maccabees","Three years of guerrilla war. Then the Temple is cleansed and the lamps are lit for eight days, the origin of Hanukkah, from a book many Bibles will leave out.","raise"],
+     ["Write Daniel's visions for this very hour",[0,1,2],"daniel","Four beasts rising from the sea, a little horn speaking great things, and *one like the Son of man* coming with the clouds. You set it in Babylon long ago so the persecuted will know God saw this coming.","write"],
+     ["Record the mother's words of resurrection",[2,0,1],"maccabees","The Creator who formed you in the womb will give you breath and life again. Few lines in scripture say so plainly that the dead will rise, and it is in a book Protestants will remove.","kneel"]]},
+ {id:"qumran",label:"The Caves of Qumran",pos:[5,-23],loc:"Qumran · the cliffs above the Dead Sea",t:"The Sons of Light",p:["The purest of the purists keep Enoch's 364-day calendar here, bathe before every meal, and wait for the war of the Sons of Light against the Sons of Darkness.","You copy Isaiah, the Psalms, Enoch, Jubilees, the Giants and Tobit, side by side, none of them labeled 'Bible' or 'apocrypha' yet. Potters are shaping tall jars with tight lids."],
+  c:[["Seal the scrolls in clay jars in the caves",[0,1,2],"dss","Linen, clay, darkness. In 1947 a Bedouin shepherd will throw a stone into one of these caves and hear pottery break.","kneel"],
+     ["Copy the War Scroll one last time",[0,0,2],"warscroll","Seven priests with trumpets, banners bearing the names of God, and angels in the battle lines. You write the end of the world by lamplight, a few miles from where it will be found.","write"],
+     ["Copy the tale of Raphael and the demon",[2,1,0],"tobit","A journey, a stranger who turns out to be an archangel, and a demon driven off by the smoke of a fish's heart. Even in the desert, people need a good story.","write"]]}]},
+
+/* ---------- X GALILEE ---------- */
+{id:"galilee",flora:"olive",n:"X",t:"The Word Made Flesh",sub:"Galilee & Jerusalem · Gospels · Thomas · Mary · Judas · Qur'an",
+ sky:["#e89a5a","#f0c890","#d8e0e0"],fog:["#e8d8c0",25,160],ground:"#7a8a4a",hemi:["#fff4e0","#4a5a2a",1.05],sun:["#ffe8c8",1.1],fx:"light",bump:.5,spawn:[0,16],portal:[0,-32],dips:[[-34,-8,20,3]],
+ intro:["You are a fisherman's son. Some will call you John, some Thomas, some only 'the beloved disciple'. You leave your nets the day a carpenter from Nazareth comes up out of the Jordan.","Four Gospels will be kept. Dozens more will be buried, burned or forgotten. You will write a little of all of them."],
+ outro:"The message runs out along Roman roads: Antioch, Ephesus, Corinth, Rome. Nero burns Christians as torches. Sixty years after the cross, you are an old man on a rock in the sea.",
+ build(B){B.water(-34,-8,44,44,"#5a9ab0",-.4);B.water(-14,8,3,30,"#6aa8c0",.3);B.model("fishboat",-28,-16,{len:5,y:-.9,ry:.4,hide:[B.box(-28,-.4,-16,4,.7,1.6,"#4a3020")]});
+  B.fig({robe:"#8a6a3a",beard:"#3a2a1a",model:"elder"},-14,2.5,0);B.fig({robe:"#efe8da",beard:"#4a3020",model:"jesus"},-16,-15,.6);B.fig({robe:"#8a1a2a",hair:"#3a1a0a",model:"mary",mh:1.05},-14,-16.5,.2,"sit");
+  B.mtn(16,-25,9,4.5,"#7a6a4a");const cr=[];[[-2.4,.8],[0,1],[2.4,.8]].forEach(([dx,s])=>cr.push(...B.cross(16+dx,-25,s,4.4)));B.model("crosses",16,-25,{len:7.5,y:4.2,ry:-Math.PI/2,hide:cr});
+  B.model("tomb",16.5,-2.5,{h:5.5,ry:-Math.PI/2,hide:[B.rock(17,-2,3.2,"#8a7a64"),B.sph(15.8,.4,-.2,.7,"#120a06",null,[1,1.3,.3]),B.cyl(13.8,1.4,-.4,1.4,1.4,.4,"#9a8a74",12,null,Math.PI/2)]});
+  B.scatter(18,(x,z)=>B.tree(x,z,1,"#4a6a2a"),8,30,null,(x,z)=>x>-14);B.scatter(10,(x,z)=>B.palm(x,z,1),8,30,null,(x,z)=>x>-12);},
+ pts:[
+ {id:"jordan",label:"The Jordan",pos:[-12,4],loc:"The Jordan, beyond Bethabara",t:"The Voice in the Wilderness",p:["A wild man in camel hair plunges a carpenter from Nazareth under the water. When the carpenter rises, the light changes. Something settles on him *like a dove*.","His mother, Mary, is watching from the bank."],
+  c:[["Follow him, writing nothing yet",[2,0,0],null,"For years you will not write a word. He writes only once that anyone knows of, with his finger in the dust, and no one records what it said.","kneel"],
+     ["Ask his mother about his childhood",[0,1,2],"infancy","Mary smiles. When he was five, she says, he shaped sparrows out of mud on the Sabbath and clapped, and they flew away. A gospel outside the canon will tell this, and so will the Qur'an.","look"],
+     ["Ask her how he was born",[1,1,1],"maryam","Alone in labor, she says, she held the trunk of a palm tree, and dates fell into her lap. The Qur'an will tell it that way in a sura named for her. Luke will tell it with a manger and shepherds.","kneel"]]},
+ {id:"shore",label:"The Lakeshore",pos:[-13,-12],loc:"The shores of Galilee",t:"The Secret Sayings",p:["For three years you walk the lakeshore villages. He heals lepers, touches the dead, and eats with tax collectors and prostitutes. In private his sayings are stranger: a kingdom spread out over the earth that people do not see.","Mary of Magdala is closer to him than many of the Twelve. Peter resents it."],
+  c:[["Write only his sayings, with no story around them",[0,1,2],"thomas","One hundred and fourteen sayings: no manger, no cross, no empty tomb, just a voice. A farmer will dig it up from under a cliff in Egypt.","write"],
+     ["Write down the healings and the signs",[2,0,0],null,"Water into wine. A man born blind. Lazarus walking out in his grave clothes. *These are written, that ye might believe.*","raise"],
+     ["Sit with Mary and hear what she was shown",[0,1,2],"mary","She describes the soul rising past seven powers to rest in silence. Peter asks whether the Lord would really tell a woman secrets he hid from them. Levi answers: *the Savior knew her very well.*","kneel"]]},
+ {id:"cross",label:"Golgotha",pos:[13,-17],loc:"Golgotha · the place of the skull",t:"The Place of the Skull",p:["Judas has gone out into the night. The canonical Gospels will call him a thief. A gospel bearing his name will claim that he alone understood.","By noon the carpenter hangs naked on a Roman cross. Darkness covers the land. *Eloi, Eloi, lama sabachthani?* You wrote those words a thousand years ago, as a weeping king."],
+  c:[["Stay at the foot of the cross with the women",[2,0,1],"psalm22","His mother, Mary Magdalene and Mary the wife of Clopas. Nearly every man has run. *It is finished.* The psalm you wrote as David ends in praise, not despair, and you hold on to that.","weep"],
+     ["Find Judas and hear his side",[0,1,2],"judas","In a field, thirty coins at his feet. In his gospel, Jesus laughs at the disciples and shows Judas the luminous cloud. Here there is only a rope and a tree.","look"],
+     ["Remember how other scriptures will tell this hour",[0,2,1],"isa","The Qur'an will say they did not kill him or crucify him; it was only made to appear so, and God raised him up. You saw what you saw. Others will testify differently.","look"]]},
+ {id:"tomb",label:"The Garden Tomb",pos:[13,-3],loc:"A garden outside the walls · the first day",t:"The Stone Rolled Away",p:["Sunday before dawn, the women find the stone rolled back and a young man in white: *He is risen; he is not here.*","In the oldest copies of Mark, the story ends with the women running away: *for they were afraid.*"],
+  c:[["Write the appearances: Thomas touching the wounds",[2,0,0],null,"*Reach hither thy finger, and behold my hands.* The doubter makes the boldest confession in the Gospels: *My Lord and my God.*","raise"],
+     ["End it in fear and wonder, as Mark first did",[0,2,1],"markending","You set the reed down mid-breath and let the reader finish it. Every scribe after you will feel the pull to add something.","write"]]}]},
+
+/* ---------- XI PATMOS ---------- */
+{id:"patmos",rockModel:"granite",n:"XI",t:"The Island of Revelation",sub:"Patmos · c. 95 CE · The Apocalypse of John",
+ sky:["#0a0005","#4a0a1a","#b83a1a"],fog:["#3a0e10",20,130],ground:"#5a4a3a",hemi:["#ff9a7a","#1a0a0a",.85],sun:["#ff8a5a",.9],fx:"embers",stars:1,bump:.6,edge:"down",spawn:[0,16],portal:[0,-30],
+ intro:["You are John, an old man exiled by Rome to Patmos, a bare island in the Aegean. On the Lord's day, a voice behind you sounds like a trumpet.","What you write here will become the last page of the Christian Bible, though you think you are writing a letter to seven churches."],
+ outro:"*Surely I come quickly. Amen.* You seal the scroll. For three centuries, no one agrees on which scrolls make up 'the Bible'.",
+ build(B){B.water(0,0,400,400,"#1a0608",-1.3);for(let i=0;i<7;i++){const a=i/7*Math.PI*2;const x=Math.sin(a)*4,z=-13+Math.cos(a)*4;B.model("lamp",x,z,{h:2.3,ry:a-Math.PI/2,hide:[B.cyl(x,0,z,.12,.3,1.8,"#d8b040",8,"#604010")]});B.glow(x,2.3,z,1.6,"#ffcf5a")}
+  B.fig({robe:"#ffffff",skin:"#ffffff",glow:"#ffe0a0",s:1.5,halo:1,model:"sonofman"},0,-13,0);
+  ["#f4f0e8","#c02a1a","#141010","#8aa08a"].forEach((c,i)=>{const x=-19+i*2.8,z=-21+i*.6;B.model("horseman",x,z,{h:3.2,ry:.25,tint:c});LV.solids.push({x,z,r:1.1})});
+  const nj=[B.box(16,6,-24,7,5,7,"#f6d77a","#c08a20",.6)];for(let i=0;i<4;i++)nj.push(B.box(13+i*2,11,-24,.8,2,.8,"#f0c860","#a07010",.5));B.model("newjeru",16,-24,{len:10,y:4,ry:-Math.PI/2,tint:"#a07020",hide:nj});B.glow(16,8,-24,16,"#fff0c0");
+  B.scatter(20,(x,z)=>B.rock(x,z,.6+B.r()*1.2,"#4a3a2e"),6,30);},
+ pts:[
+ {id:"lamps",label:"The Seven Lampstands",pos:[0,-8],loc:"Patmos · the Lord's day",t:"One Like the Son of Man",p:["Among seven golden lampstands stands one like the Son of man: hair white as snow, eyes like flames of fire, a sharp two-edged sword coming out of his mouth. You fall at his feet as though dead.","*Fear not; I am the first and the last.* He tells you to write to seven churches hunted by an empire."],
+  c:[["Write to the seven churches",[2,1,0],"revelation","Ephesus, Smyrna, Pergamum, Thyatira, Sardis, Philadelphia, Laodicea. You write so they will know that the Lamb wins, whatever Caesar does.","write"],
+     ["Fall at his feet",[2,0,1],null,"A hand touches your shoulder. *I am he that liveth, and was dead; and, behold, I am alive for evermore.*","kneel"]]},
+ {id:"riders",label:"The Four Riders",pos:[-13,-16],loc:"The breaking of the seals",t:"The Pale Horse",p:["A Lamb, looking as if it had been slain, opens a scroll sealed with seven seals. White horse. Red horse. Black horse. *And behold a pale horse: and his name that sat on him was Death, and Hell followed with him.*","Then a beast rises from the sea, and its number is the number of a man."],
+  c:[["Count the number of the beast",[0,2,1],"num666","*Let him that hath understanding count the number of the beast.* You add up the letters of an emperor's name in Hebrew. Your first readers will understand. Readers two thousand years later will argue about it endlessly.","write"],
+     ["Look past the beast to the dragon",[0,0,2],"enoch","A dragon sweeps a third of the stars down with its tail, and you think of the Watchers falling onto Hermon. The book you began as Enoch, you are finishing as John.","look"]]},
+ {id:"city",label:"The New Jerusalem",pos:[13,-18],loc:"The last vision",t:"All Things New",p:["*A new heaven and a new earth.* The holy city comes down like a bride: gates of single pearls, streets of gold like clear glass, and no temple, because God is its temple.","At the very end, your hand writes a warning against anyone who adds to or takes away from the words of this book. You mean one scroll. You cannot know it will be the last page of a book that does not exist yet."],
+  c:[["Write the warning and seal the scroll",[2,0,0],null,"The tree of life, lost in the first pages, grows again on the last. You press your thumb into the wax.","raise"],
+     ["Wonder who will decide which books are holy",[0,2,1],null,"You think of the jars by the Dead Sea, the Book of Jasher that no one can find, and monks in Ethiopia you have not met yet. Someone will have to choose. You hope they choose gently.","look"]]}]},
+
+/* ---------- XII ALEXANDRIA ---------- */
+{id:"alex",n:"XII",t:"The Drawing of the Lines",sub:"Alexandria · Nag Hammadi · Aksum · 367 CE",
+ sky:["#3a6aa0","#a0c8e0","#f0e8d0"],fog:["#d8e0e0",30,170],ground:"#c8b080",hemi:["#fffaf0","#6a5a3a",1.05],sun:["#fff8e0",1.1],fx:"dust",bump:.35,spawn:[0,16],portal:[0,-34],
+ intro:["Alexandria, 367 CE. The great lighthouse still burns at the harbor mouth. You are a copyist in the household of Bishop Athanasius.","Upriver, monks are reading books the bishop is about to forbid. Far to the south, a Christian kingdom is keeping books the rest of the world will lose."],
+ outro:"Two and a half centuries pass. In Arabia, in the valley where Abraham and Ishmael raised a House, a merchant climbs a mountain each year to be alone with God.",
+ build(B){B.model("pharos",-26,-44,{h:30,hide:[B.box(-26,0,-44,6,14,6,"#e0d8c8"),B.box(-26,14,-44,4,8,4,"#d8d0c0"),B.cyl(-26,22,-44,1.4,1.6,4,"#d0c8b8")]});B.fire(-26,28,-44,2);B.glow(-26,29,-44,14,"#ffd08a");B.water(-30,-60,90,30,"#3a7aa8",.2);
+  const lb=[];for(let i=0;i<7;i++)lb.push(B.cyl(-16+i*1.6,0,-11,.35,.4,5,"#efe8d8"));lb.push(B.box(-11,5,-12,12,.7,4,"#e0d8c8"));B.model("library",-11.5,-13,{len:12,ry:-Math.PI/2,hide:lb});B.model("desk",-11,-8,{len:3,ry:-Math.PI/2,hide:[B.box(-11,0,-8,3,.9,1.2,"#6a4a2a")]});B.fig({robe:"#3a2a1a",beard:"#ddd",hat:1,model:"elder"},-12.4,-9,.5);
+  B.model("stoa",18,-18,{len:14,ry:-Math.PI/2,hide:[B.box(18,0,-18,14,8,4,"#a87a50")]});B.cyl(14,0,-15.4,.5,.4,1.3,"#b8946a");B.fig({robe:"#2a2018",beard:"#555",model:"elder"},15.5,-15,-.5);
+  B.model("stele",0,-27,{h:13,ry:-Math.PI/2,hide:[B.box(0,0,-27,1.4,12,.8,"#9a9080"),B.sph(0,12,-27,.7,"#9a9080",null,[1,1,.55])]});B.box(-3,0,-28,1,7,.6,"#9a9080");B.box(3,0,-28,1,8,.6,"#9a9080");B.fig({robe:"#f4f0e8",beard:"#222",skin:"#5a3a22",model:"elder"},1.6,-24.5,0);
+  B.scatter(14,(x,z)=>B.palm(x,z,1),10,30);},
+ pts:[
+ {id:"letter",label:"The Bishop's Letter",pos:[-11,-6],loc:"Alexandria · Easter 367 CE",t:"The Thirty-Ninth Festal Letter",p:["Athanasius dictates a letter to the churches of Egypt. For the first time, someone lists exactly the twenty-seven books of today's New Testament. Let no one add to these, he says, or take anything away from them.","No council at Nicaea decided this; that is a modern legend. The process was slow, contested and regional."],
+  c:[["Copy the canon list faithfully",[2,1,0],"athanasius","Matthew, Mark, Luke, John, Acts, seven general epistles, fourteen of Paul's, and the Revelation of John. Your hand does not shake. You have written every one of them before.","write"],
+     ["Ask why the Shepherd of Hermas is left out",[0,2,0],"athanasius","'Useful for instruction,' he says, 'but not canonical.' The line between scripture and good reading is drawn by hand, in ink, by people.","look"]]},
+ {id:"jar",label:"The Cliff of Jabal al-Tarif",pos:[14,-12],loc:"Upper Egypt · near Nag Hammadi",t:"The Buried Library",p:["Monks from a nearby monastery carry thirteen leather-bound books out at night: Thomas, Philip, the Secret Book of John, the Gospel of Truth.","They dig at the foot of the cliff, and a jar waits beside the hole."],
+  c:[["Help them bury the forbidden books",[0,0,2],"nag","You seal the jar with bitumen and push it into the soft earth. It will lie there for 1,578 years, until a farmer digging for fertilizer breaks it open in December 1945.","kneel"],
+     ["Read the Gospel of Thomas one last time",[0,1,2],"thomas","*Split a piece of wood, and I am there.* You read it by moonlight, then roll it closed.","write"]]},
+ {id:"aksum",label:"The Stelae of Aksum",pos:[0,-22],loc:"Aksum · the highlands of Ethiopia",t:"The Kingdom That Kept the Books",p:["South along the Nile and up into the highlands stands a Christian kingdom with towering stone stelae. Its monks will keep what the empire forgets.","They show you a codex in Ge'ez. It opens with the Watchers on Hermon."],
+  c:[["Give them every book you carry",[1,0,2],"ethiopian","Enoch, Jubilees, and books the north never knew. The Ethiopian canon will hold about eighty-one books. Without it, the Watchers would survive only in fragments.","raise"],
+     ["Copy the Watchers in Ge'ez",[0,1,2],"enoch","Shemyaza's oath, Azazel's arts, the giants' dreams. You write them a third time, in a third alphabet, on the far side of the world from Hermon.","write"]]}]},
+
+/* ---------- XIII HIRA ---------- */
+{id:"hira",rockModel:"sandrock",n:"XIII",t:"Recite!",sub:"Mecca & Medina · 610–650 CE · The Qur'an",
+ sky:["#02020a","#0a1030","#1a2448"],fog:["#0c1024",20,140],ground:"#5a4a38",hemi:["#8090c0","#1a1410",.7],sun:["#b0c0ff",.6],fx:"dust",stars:1,bump:1.1,spawn:[0,16],portal:[0,-34],
+ intro:["Mecca, 610 CE. Idols crowd around the House that Abraham built. In the month of Ramadan, a merchant named Muhammad has climbed to a cave on Jabal al-Nour to pray alone.","You are Waraqa ibn Nawfal, an old, blind Christian who knows the earlier books. Your soul has seen every one of them written."],
+ outro:"Now the great books of Abraham's family are three, each confirming, correcting and arguing with the others, while far to the east the Vedas and sutras are still chanted. One age is left.",
+ build(B){B.mtn(0,-46,18,20,"#3a3028");B.mtn(-40,-40,20,22,"#30281f");B.mtn(40,-44,22,24,"#30281f");B.scatter(22,(x,z)=>B.rock(x,z,.6+B.r()*1.5,"#4a3c2e"),6,30);
+  for(let i=0;i<5;i++)B.rock(-3+i*1.5,-26-(i%2),1.4,"#2a2018");B.model("cave",0,-25.6,{h:4.6,ry:-Math.PI/2,hide:[B.sph(0,.8,-25,1.2,"#000000",null,[1.2,1,.4])]});B.glow(0,1.4,-25,6,"#c0d8ff");
+  B.fig({robe:"#ffffff",skin:"#ffffff",glow:"#a0c0ff",wings:1,s:3.6},0,-31,0,"raise");B.glow(0,8,-31,22,"#9ab8ff");
+  const kb2=[B.box(-24,0,-28,2.4,2.8,2.4,"#141010")];B.model("kaaba",-24,-28,{h:3.2,ry:-Math.PI/2,hide:kb2});for(let i=0;i<10;i++){const a=i/10*Math.PI*2;const ix=-24+Math.sin(a)*3.4,iz=-28+Math.cos(a)*3.4;B.model("idol",ix,iz,{h:1.5,ry:a+Math.PI/2,hide:[B.cyl(ix,0,iz,.15,.2,.9,"#8a7a6a")]})}
+  B.model("arabhouse",-15,-5.5,{h:3.4,ry:-Math.PI/2,hide:[B.box(-15,0,-5,5,3,4,"#8a6a4a")]});B.lamp(-13,-2.6);B.fig({robe:"#3a3a4a",beard:"#eee",model:"waraqa",mh:1.1},-12.4,-3.4,.6,"sit");
+  B.fig({robe:"#e8e0d0",hat:1,beard:"#222",model:"sage",mh:1.05},15,-9,-.4,"sit");for(let i=0;i<6;i++)B.box(13+B.r()*3,0,-6.5-B.r()*2,.5,.04,.4,i%2?"#efe4c8":"#e8e8e8");B.cyl(14,.1,-6,.06,.06,1.6,"#8a6a3a",6,null,Math.PI/2);},
+ pts:[
+ {id:"cave",label:"The Cave of Hira",pos:[0,-21],loc:"Jabal al-Nour · Ramadan, 610 CE",t:"Recite!",p:["A presence fills the horizon in every direction the merchant turns. It seizes him and presses him until he cannot breathe. *Recite!* 'I am not a reciter.' Again. *Recite, in the name of your Lord who created.*","*Who taught by the pen; taught man what he knew not.* The reed in your own hand burns."],
+  c:[["Bow before the voice",[2,0,1],"iqra","He runs down the mountain shaking: cover me, cover me. Muslims will count this as the first revelation of a Qur'an that unfolds over twenty-three years. Its first command is to read, and it praises the pen.","bow"],
+     ["Listen for the echoes of the earlier books",[0,1,2],"suhuf","It will name them: the scrolls of Ibrahim and Musa, the Tawrat, the Zabur, the Injil. It calls itself a confirmation of what came before. For the first time, someone else tells the story the way you have lived it.","look"]]},
+ {id:"waraqa",label:"The House of Waraqa",pos:[-12,-1],loc:"Mecca · the same night",t:"The Keeper of Secrets",p:["Khadija brings her husband to your door, still trembling. You are old and your eyes are gone, but you have copied the Gospel in Hebrew letters.","You listen to what he saw in the cave."],
+  c:[["Tell him: 'This is the Namus that came to Moses'",[1,2,0],"waraqa","'If only I were young when your people drive you out.' 'Will they drive me out?' 'No one ever brought what you bring without being made an enemy.' You die soon afterward, having stood at the door of three scriptures.","raise"],
+     ["Tell him the tale of the sleepers in the cave",[0,1,2],"sleepers","Young men of Ephesus who slept for centuries while an empire turned Christian. The Qur'an will tell it too: the cave, the dog at the threshold, and people arguing about how many there were.","look"]]},
+ {id:"zayd",label:"The Scraps of Revelation",pos:[13,-5],loc:"Medina · c. 632–650 CE",t:"Gathering the Recitation",p:["Your soul moves into a young man of Medina, Zayd ibn Thabit, who wrote down revelations as the Prophet recited them. Now the Prophet is dead, and reciters are falling in battle.","The verses are on palm stalks, flat white stones, scraps of leather and the shoulder blades of camels. You are ordered to gather them into one book."],
+  c:[["Gather every verse from memory and parchment",[1,2,0],"uthman","Heavier than moving a mountain, you will say. Under Uthman, one standard copy goes out to every city, and the variants are burned. Leaves from within a few decades will survive in Birmingham.","write"],
+     ["Write down the sura of Maryam",[1,0,2],"maryam","*And mention Mary in the Book.* A palm tree in labor and an infant who speaks from the cradle. The stories you heard in Galilee, told again in Arabic.","write"]]}]},
+
+/* ---------- XIV LIBRARY ---------- */
+{id:"library",n:"XIV",t:"The Library of Every Book",sub:"Wittenberg 1534 · Amritsar 1604 · the last page",
+ sky:["#0a0605","#1a1008","#2a180c"],fog:["#1a1008",16,90],ground:"#4a3020",hemi:["#ffd8a0","#1a1008",.8],sun:["#ffc880",.7],fx:"light",bump:0,spawn:[0,14],interior:1,final:1,
+ intro:["Your final life is not one life. You walk a hall that holds every book you ever wrote, in every language, from clay tablets to printed pages.","Two more hands are waiting. Then the reed must be set down."],
+ build(B){B.shelves();for(let i=0;i<10;i++){B.model("libpillar",-24+i*5.3,-34,{h:12,hide:[B.cyl(-24+i*5.3,0,-34,.6,.7,12,"#2a1a0c")]});B.glow(-24+i*5.3,7,-33,4,"#ffb050")}
+  B.model("press",-13,-10,{h:3.2,ry:-Math.PI/2,hide:[B.box(-13,0,-10,2.6,3.2,1.6,"#3a2412"),B.box(-13,3.2,-10,3.2,.4,2,"#2a1a0c")]});B.model("desk",-11,-8,{len:2.6,ry:-Math.PI/2,hide:[B.box(-11,0,-8,2.2,1,1.4,"#3a2412"),B.box(-11,1,-8,1.6,.05,1,"#efe4c8")]});B.fig({robe:"#1a1410",model:"luther"},-14.5,-8,.4);
+  B.disc(13,-12,3.4,"#2a4a6a");B.box(12,0,-8.6,3,.4,2,"#e8d8b0");B.fig({robe:"#f4f0e8",turban:1,beard:"#222",model:"guru",mh:1.3},12,-9.6,0,"sit");
+  B.model("lectern",0,-23,{h:2.4,ry:-Math.PI/2,hide:[B.box(0,0,-23,1.2,2.2,1,"#3a2412"),B.box(0,2.2,-22.8,1.8,.15,1.4,"#efe4c8","#806040",.4)]});B.glow(0,3,-23,8,"#fff0c0");B.cyl(0,0,-23,1.6,1.6,30,"#fff0c0",24,"#fff0c0",0,.08);},
+ pts:[
+ {id:"luther",label:"The Printing Press",pos:[-11,-5],loc:"Wittenberg · 1534",t:"The Last Cut",p:["A press clatters. Martin Luther has finished his German Bible. The books found in the Greek Old Testament but not the Hebrew, Tobit, Judith, Maccabees, Wisdom, Sirach and Baruch, go into a section between the Testaments called the *Apocrypha*.","Good and useful to read, he says, but not equal to Scripture."],
+  c:[["Set the Apocrypha between the Testaments",[1,2,0],"luther","Protestant Bibles will have 66 books, Catholic Bibles 73, and Orthodox Bibles more. The Ethiopian Bible will keep about 81. Each line is drawn by a different hand.","write"],
+     ["Pull the first page off the press",[0,1,1],"luther","Ink on paper, a thousand copies at a time. For the first time, ordinary people will hold the whole book and argue about it themselves.","raise"]]},
+ {id:"guru",label:"The Harmandir",pos:[11,-5],loc:"Amritsar · 1604",t:"One Creator",p:["Beside a pool, the fifth Sikh Guru, Guru Arjan, is compiling a scripture. Along with the hymns of the Gurus, he writes in the hymns of Kabir, a Muslim weaver; Baba Farid, a Sufi master; and Hindu saints from the lowest castes.","It begins with two syllables: *Ik Onkar*. One Creator."],
+  c:[["Write the hymns of every faith into one book",[1,1,2],"granth","A century later the tenth Guru will declare that after him, the Guru will be this book. It is the nearest any scripture comes to what you have been doing.","write"],
+     ["Bow before the book",[2,0,1],"granth","You bow. Everyone in this hall, whatever they believe, bows to something written.","bow"]]},
+ {id:"final",label:"The Last Lectern",pos:[0,-19],loc:"The end of the hall",t:"Set Down the Reed",p:["One book lies open on the lectern with blank pages. Around you are the Torah, the Gospels, the Qur'an, the Vedas, the sutras, the Tao, the Granth, and the jars, codices and fragments that were buried.","Every tradition drew its own line. The reed has been in your hand for five thousand years. What will you write on the last page?"],
+  c:[["'What was kept was kept for a reason'",[3,0,0],null,"You close the book.","kneel"],
+     ["'Leave the hidden books for those who seek'",[0,0,3],null,"You leave the jar unsealed.","raise"],
+     ["'Leave the question open for every reader'",[0,3,0],null,"You leave the margin blank.","write"]]}]}
+];
+
+const ENDINGS={
+f:["THE FAITHFUL HAND","You chose to trust that the Voice in the bush, the whirlwind and the cave also guided the slow, human, argued-over gathering of the books. You do not need every lost scroll to hear the one Word running through them.","You leave the canon sealed and believe a single breath moves through every page you ever wrote."],
+w:["THE SCHOLAR'S HAND","You saw the seams: two floods braided into one, Hammurabi behind Sinai, Marduk's dragon under Genesis, Mark's lost ending, Iblis and Satan refusing the same bow in different books. You loved the books more for seeing the hands that carried them.","Scripture, as you leave it, is one long conversation across five thousand years: Israel and Babylon, Persia and India, Greece and Arabia, Ethiopia and Rome, each arguing in the others' margins."],
+v:["THE HIDDEN HAND","You followed the Watchers onto Hermon, rode the great fish, sat with Mary Magdalene, heard Judas out, and copied Enoch in three alphabets. To you, every canon is an island, and the sea around it is full of books.","You leave the hidden books where seekers will find them: Enoch in Ge'ez, Thomas under a cliff, the War Scroll in a cave by the Salt Sea. Every one of them was found again."]
+};
+
+/* ================= ENGINE ================= */
+const $=id=>document.getElementById(id);
+const fmt=s=>s.replace(/\*(.+?)\*/g,'<span class="q">$1</span>');
+const lerp=(a,b,k)=>a+(b-a)*k, ease=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+const RAD=31;
+let S=null, L=null, LV=null, mode="title";
+const fresh=()=>({lvl:0,done:{},f:0,w:0,v:0,cx:[]});
+function save(){try{localStorage.setItem("scribe3d",JSON.stringify(S))}catch(e){}}
+function loadSave(){try{const s=JSON.parse(localStorage.getItem("scribe3d"));return s&&s.done?s:null}catch(e){return null}}
+function allFound(){try{return JSON.parse(localStorage.getItem("scribe3d-cx"))||[]}catch(e){return[]}}
+function addAll(id){try{const a=allFound();if(!a.includes(id)){a.push(id);localStorage.setItem("scribe3d-cx",JSON.stringify(a))}}catch(e){}}
+
+/* ---------- three setup ---------- */
+const canvas=$("c");
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+const camera=new THREE.PerspectiveCamera(68,1,.1,700);camera.rotation.order="YXZ";
+let scene=new THREE.Scene();
+function resize(){renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
+addEventListener("resize",resize);resize();
+
+const MC={};
+function M(c,e,ei,op){const k=[c,e,ei,op].join("|");if(!MC[k]){MC[k]=new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.92,metalness:0,emissive:e||"#000",emissiveIntensity:e?(ei??.7):0,transparent:op!=null,opacity:op??1,depthWrite:op==null||op>.5});MC[k].userData.keep=1}return MC[k]}
+const glowTex=(()=>{const c=document.createElement("canvas");c.width=c.height=128;const g=c.getContext("2d");const r=g.createRadialGradient(64,64,0,64,64,64);r.addColorStop(0,"rgba(255,255,255,1)");r.addColorStop(.25,"rgba(255,255,255,.55)");r.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=r;g.fillRect(0,0,128,128);return new THREE.CanvasTexture(c)})();
+function sprite(col,size,op=1){const m=new THREE.SpriteMaterial({map:glowTex,color:col,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:op,fog:false});const s=new THREE.Sprite(m);s.scale.setScalar(size);return s}
+function canvasTex(w,h,draw){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);return t}
+const beamTex=canvasTex(8,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,"rgba(255,240,200,0)");gr.addColorStop(.55,"rgba(255,236,190,.55)");gr.addColorStop(.92,"rgba(255,246,220,1)");gr.addColorStop(1,"rgba(255,255,255,.2)");g.fillStyle=gr;g.fillRect(0,0,w,h)});
+const runeTex=canvasTex(256,256,(g,w)=>{const c=w/2;g.strokeStyle="rgba(255,226,150,1)";g.lineWidth=3;g.beginPath();g.arc(c,c,118,0,7);g.stroke();g.lineWidth=1.5;g.beginPath();g.arc(c,c,98,0,7);g.stroke();
+  g.font="bold 18px serif";g.fillStyle="rgba(255,230,160,1)";g.textAlign="center";g.textBaseline="middle";const gl="אבגדהוזחטיכלמנ αβγδεζηθ ابتثجحخدذر ॐ道ੴ".replace(/ /g,"").split("");
+  for(let i=0;i<24;i++){const a=i/24*Math.PI*2;g.save();g.translate(c+Math.cos(a)*108,c+Math.sin(a)*108);g.rotate(a+Math.PI/2);g.fillText(gl[i%gl.length],0,0);g.restore()}
+  for(let i=0;i<8;i++){const a=i/8*Math.PI*2;g.beginPath();g.moveTo(c+Math.cos(a)*40,c+Math.sin(a)*40);g.lineTo(c+Math.cos(a)*92,c+Math.sin(a)*92);g.stroke()}
+  const rg=g.createRadialGradient(c,c,0,c,c,60);rg.addColorStop(0,"rgba(255,240,200,.5)");rg.addColorStop(1,"rgba(255,240,200,0)");g.fillStyle=rg;g.beginPath();g.arc(c,c,60,0,7);g.fill()});
+const doorTex=canvasTex(512,512,(g,w)=>{const c=w/2;const rg=g.createRadialGradient(c,c,20,c,c,250);rg.addColorStop(0,"rgba(255,255,255,1)");rg.addColorStop(.35,"rgba(255,244,210,.95)");rg.addColorStop(.62,"rgba(255,214,130,.55)");rg.addColorStop(.8,"rgba(255,190,90,.18)");rg.addColorStop(1,"rgba(255,180,80,0)");g.fillStyle=rg;g.fillRect(0,0,w,w);
+  g.globalCompositeOperation="lighter";for(let i=0;i<48;i++){const a=i/48*Math.PI*2,l=150+(i%3)*40;g.strokeStyle=`rgba(255,235,180,${.12+(i%2)*.1})`;g.lineWidth=2+(i%4);g.beginPath();g.moveTo(c+Math.cos(a)*70,c+Math.sin(a)*70);g.lineTo(c+Math.cos(a)*l,c+Math.sin(a)*l);g.stroke()}
+  g.strokeStyle="rgba(255,230,150,.9)";g.lineWidth=6;g.beginPath();g.arc(c,c,178,0,7);g.stroke();g.lineWidth=2;g.beginPath();g.arc(c,c,196,0,7);g.stroke()});
+const sparkTex=canvasTex(64,64,(g,w)=>{const c=w/2;const rg=g.createRadialGradient(c,c,0,c,c,c);rg.addColorStop(0,"rgba(255,255,255,1)");rg.addColorStop(.2,"rgba(255,240,200,.8)");rg.addColorStop(1,"rgba(255,220,150,0)");g.fillStyle=rg;g.fillRect(0,0,w,w);g.fillStyle="rgba(255,255,255,.9)";g.fillRect(c-1,4,2,w-8);g.fillRect(4,c-1,w-8,2)});
+[beamTex,runeTex,doorTex,sparkTex].forEach(t=>{});
+const addM=new THREE.MeshBasicMaterial({color:"#ffe8a0",transparent:true,opacity:.16,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false});
+
+/* ---------- painted art ---------- */
+const SKYF=["01_eden","02_hermon","03_flood","04_abraham","05_egypt","06_jerusalem","07_babylon","08_east","09_judea","10_galilee","11_patmos","12_alexandria","13_hira","14_library"];
+const ART={1:[.52,"#323e58","#dfb995"],2:[.55,"#061133","#446da4"],3:[.47,"#282a31","#776d69"],4:[.52,"#2c274a","#dd8b5c"],5:[.57,"#3d4775","#d5a06d"],6:[.56,"#4d6375","#857156"],7:[.63,"#705860","#814525"],8:[.62,"#8791b0","#676b5a"],9:[.5,"#a1acbf","#a1846e"],10:[.53,"#7b6d5e","#7a6b59"],11:[.55,"#4c1812","#883024"],12:[.58,"#4885c6","#97826d"],13:[.56,"#132654","#4c3c3c"],14:[.55,"#3a2114","#844a1f"]};
+const TL=new THREE.TextureLoader();
+function loadTex(url,cb){TL.load(url,cb,undefined,()=>{})}
+const FXT={};
+function sheetFrames(url,key){loadTex(url,t=>{const fr=[];for(let i=0;i<16;i++){const c=t.clone();c.repeat.set(.25,.25);c.offset.set((i%4)*.25,.75-Math.floor(i/4)*.25);c.needsUpdate=true;fr.push(c)}FXT[key]=fr})}
+sheetFrames("assets/fx/fx_fire.png","fire");sheetFrames("assets/fx/fx_ink_glyphs.png","glyph");sheetFrames("assets/fx/fx_divine_light.png","light");
+const CARDS=[];for(let i=1;i<=14;i++){const im=new Image();CARDS.push(im)}
+function preCard(i){const im=CARDS[i];if(!im.src)im.src=`assets/ui/chapter_${String(i+1).padStart(2,"0")}.jpg`}
+
+/* ---------- 3D models ---------- */
+const MODEL_FILES={ark:1,kaaba:1,angel:1,elder:1,woman:1,goliath:1,giant:1,tree:1,ziggurat:1,calf:1,fish:1,scribe:1,bush:1,press:1,crosses:1,sage:1,buddha:1,tomb:1,pharos:1,ishtar:1,bodhi:1,stele:1,guru:1,jesus:1,mary:1,solomon:1,boy:1,luther:1,horseman:1,lamp:1,newjeru:1,qumran:1,waraqa:1,olive:1,palm:1,gtree:1,willow:1,sandrock:1,granite:1,idolshop:1,cubeboat:1,snowpeak:1,temple:1,giantsit:1,passhouse:1,iblis:1,davidgrief:1,library:1,desertmtn:1,ox:1,pyramid:1,adam:1,sonofman:1,zeus:1,anubis:1,hill:1,azazel:1,fishboat:1,arabhouse:1,firealtar:1,cloud:1,lectern:1,palace:1,altar:1,sirahouse:1,maat:1,idol:1,citywall:1,tent:1,egypthall:1,bronzepillar:1,zeustemple:1,desk:1,stoa:1,tablets:1,cave:1,libpillar:1,frontwall:1,sheep:1,well:1};
+const MCACHE={},MWAIT={},MANIM={},KEEPTEX=new WeakSet();
+function getModel(key,cb){if(!MODEL_FILES[key]||!THREE.GLTFLoader)return;if(MCACHE[key]){cb(MCACHE[key]);return}
+  (MWAIT[key]=MWAIT[key]||[]).push(cb);if(MWAIT[key].length>1)return;
+  const fail=()=>{MWAIT[key]=[]};const sc=document.createElement("script");sc.src=`assets/models/${key}.js`;sc.onerror=fail;sc.onload=()=>{const b64=(window.SCRIBE_M||{})[key];if(!b64){fail();return}const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);delete window.SCRIBE_M[key];
+  new THREE.GLTFLoader().parse(u.buffer,"",g=>{const s=g.scene;s.traverse(o=>{o.userData.keep=1;if(o.material){o.material.userData.keep=1;if(o.material.map){KEEPTEX.add(o.material.map);o.material.map.encoding=THREE.LinearEncoding;o.material.needsUpdate=true}}});MCACHE[key]=s;MANIM[key]=g.animations||[];MWAIT[key].forEach(f=>f(s));MWAIT[key]=[]},fail)};document.head.appendChild(sc)}
+function fitModel(src,{h,len,ry=0}){const m=src.clone(true);const w=new THREE.Group();m.rotation.y=ry;w.add(m);w.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(m),sz=new THREE.Vector3();bb.getSize(sz);
+  const k=h?h/sz.y:len/Math.max(sz.x,sz.z);m.scale.setScalar(k);w.updateMatrixWorld(true);bb.setFromObject(m);const c=new THREE.Vector3();bb.getCenter(c);m.position.set(-c.x,-bb.min.y,-c.z);return w}
+function placeModel(key,x,z,opt){const holder=new THREE.Group();holder.position.set(x,(L.water?0:H(x,z))+(opt.y||0),z);scene.add(holder);const lv=LV;
+  getModel(key,src=>{if(LV!==lv)return;const fm=fitModel(src,opt);if(opt.tint)fm.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive=new THREE.Color(opt.tint);o.material.emissiveIntensity=.35}});holder.add(fm);if(opt.hide)opt.hide.forEach(o=>o.visible=false)});return holder}
+function figModel(f,key,h=1.8){if(f.pose==="sit"||f.pose==="kneel"||f.pose==="weep")f.pose="idle";const lv=LV;getModel(key,src=>{if(LV!==lv)return;f.core.children.forEach(c=>{if(!c.isSprite)c.visible=false});const m=fitModel(src,{h,ry:-Math.PI/2});f.core.add(m);f.model=m})}
+
+function playerRig(){if(!MODEL_FILES.scribe)return;const lv=LV;getModel("scribe",src=>{if(LV!==lv)return;
+  let R=P.rigObj;if(!R){const w=new THREE.Group();src.rotation.y=0;w.add(src);src.traverse(o=>{if(o.isMesh)o.frustumCulled=false});
+    const mixer=new THREE.AnimationMixer(src),clips=MANIM.scribe,find=n=>clips.find(c=>c.name.toLowerCase().includes(n));const walk=find("walk"),idle=find("idle");
+    const acts={};["kneel","bow","raise","look","throw","smash","weep"].forEach(n=>{const c=find(n);if(c){const a=mixer.clipAction(c);a.setLoop(THREE.LoopOnce,1);a.clampWhenFinished=true;acts[n]=a}});
+    R=P.rigObj={w,mixer,walk:walk&&mixer.clipAction(walk),idle:idle&&mixer.clipAction(idle),acts,cur:null}}
+  P.fig.g.add(R.w);P.rig=R;rigPlay(R.idle||R.walk)})}
+function rigPlay(a){const R=P.rig;if(!R||!a||R.cur===a)return;a.reset().play();if(R.cur)R.cur.crossFadeTo(a,.25,false);R.cur=a}
+const POSECLIP={kneel:"kneel",sit:"kneel",bow:"bow",raise:"raise",look:"look",eat:"look",write:"look",throw:"throw",smash:"smash",weep:"weep"};
+function rigUpdate(dt){const R=P.rig;if(!R)return;const pc=R.acts&&R.acts[POSECLIP[P.fig.pose]];if(pc){R.w.visible=true;P.fig.core.children.forEach(c=>{if(!c.isSprite)c.visible=false});rigPlay(pc);R.mixer.update(dt);return}const act=P.fig.pose==="idle";R.w.visible=act;P.fig.core.children.forEach(c=>{if(!c.isSprite)c.visible=!act});
+  if(act){rigPlay(P.fig.moving&&R.walk?R.walk:(R.idle||R.walk));if(R.cur===R.walk&&!P.fig.moving&&!R.idle)R.walk.timeScale=0;else if(R.walk)R.walk.timeScale=1}R.mixer.update(dt)}
+
+/* ---------- ground height ---------- */
+function H(x,z){
+  if(!L||L.water)return 0;
+  const d=Math.hypot(x,z),b=L.bump??.35;
+  let h=Math.sin(x*.13)*Math.cos(z*.11)*b+Math.sin(x*.31+z*.17)*b*.45;
+  if(L.dips)for(const[dx,dz,r,dep]of L.dips){const dd=Math.hypot(x-dx,z-dz);if(dd<r)h-=dep*(1-(dd/r)**2)}
+  if(d>RAD){const e=d-RAD;h+=L.edge==="down"?-e*.25:(L.interior?0:Math.min(e*e*.02,6+e*.04)*(1+.45*Math.sin(Math.atan2(z,x)*6)))}
+  return h;
+}
+
+/* ---------- seeded rand ---------- */
+let seed=1;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
+
+/* ---------- figures ---------- */
+const FIGS=[];
+function makeFig(o={}){
+  const s=o.s||1,g=new THREE.Group(),core=new THREE.Group();g.add(core);
+  const gl=o.glow||null,rm=M(o.robe||"#7a5a3a",gl,.55),sm=M(o.skin||"#9a6a44",gl,.55);
+  const robe=new THREE.Mesh(new THREE.CylinderGeometry(.24,.5,1.36,9),rm);robe.position.y=.68;core.add(robe);
+  const sh=new THREE.Mesh(new THREE.SphereGeometry(.3,9,6),rm);sh.scale.set(1,.55,.75);sh.position.y=1.32;core.add(sh);
+  const head=new THREE.Group();head.position.y=1.6;core.add(head);
+  head.add(new THREE.Mesh(new THREE.SphereGeometry(.18,12,9),sm));
+  if(o.hair){const h=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8,0,6.3,0,1.9),M(o.hair));h.position.set(0,.02,-.02);head.add(h)}
+  if(o.beard){const b=new THREE.Mesh(new THREE.ConeGeometry(.13,.32,7),M(o.beard));b.rotation.x=Math.PI;b.position.set(0,-.15,.09);head.add(b)}
+  if(o.turban){const t=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),M("#f8f4ea"));t.scale.set(1,.75,1);t.position.y=.12;head.add(t)}
+  if(o.hat){const t=new THREE.Mesh(new THREE.CylinderGeometry(.14,.19,.24,9),M("#e8d8a0"));t.position.y=.2;head.add(t)}
+  if(o.helmet){const t=new THREE.Mesh(new THREE.ConeGeometry(.22,.36,8),M("#b08a3a",null,0));t.position.y=.18;head.add(t);const ar=new THREE.Mesh(new THREE.CylinderGeometry(.33,.45,.7,9),M("#9a7a30"));ar.position.y=1.05;core.add(ar)}
+  if(o.crown){const t=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.12,8,1,true),M("#e8c040","#806010"));t.position.y=.17;head.add(t)}
+  if(o.ears){for(const sd of[-1,1]){const e=new THREE.Mesh(new THREE.ConeGeometry(.05,.3,4),sm);e.position.set(sd*.09,.24,0);head.add(e)}const sn=new THREE.Mesh(new THREE.ConeGeometry(.07,.25,5),sm);sn.rotation.x=Math.PI/2;sn.position.set(0,-.02,.2);head.add(sn)}
+  if(o.halo){const t=new THREE.Mesh(new THREE.TorusGeometry(.26,.025,6,24),M("#ffe08a","#ffc040",1));t.position.set(0,.12,-.12);head.add(t)}
+  const arm=sd=>{const p=new THREE.Group();p.position.set(sd*.31,1.3,0);const a=new THREE.Mesh(new THREE.CylinderGeometry(.075,.06,.6,6),rm);a.position.y=-.3;p.add(a);const hd=new THREE.Mesh(new THREE.SphereGeometry(.07,6,5),sm);hd.position.y=-.62;p.add(hd);core.add(p);return p};
+  const aL=arm(1),aR=arm(-1);
+  if(o.wings){const wm=new THREE.MeshBasicMaterial({color:gl||"#fff",transparent:true,opacity:.45,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false});for(const sd of[-1,1]){const w=new THREE.Mesh(new THREE.CircleGeometry(.8,12),wm);w.scale.set(.55,1.25,1);w.position.set(sd*.5,1.35,-.25);w.rotation.set(0,sd*.6,sd*-.35);core.add(w)}}
+  const sh2=new THREE.Mesh(new THREE.CircleGeometry(.55,16),new THREE.MeshBasicMaterial({color:"#000",transparent:true,opacity:.28,depthWrite:false}));sh2.rotation.x=-Math.PI/2;sh2.position.y=.03;g.add(sh2);
+  if(gl){const sp=sprite(gl,3.2,.5);sp.position.y=1.2;core.add(sp)}
+  g.scale.setScalar(s);
+  const f={g,core,aL,aR,head,s,pose:o.pose||"idle",pt:Math.random()*5,walk:0,moving:false,fall:0,tag:o.tag,npc:!o.player,base:0};
+  FIGS.push(f);return f;
+}
+function setPose(f,p){f.pose=p;f.pt=0;f.fired=false}
+function updFig(f,dt){
+  f.pt+=dt;let tL=0,tR=0,zL=.08,zR=-.08,cy=0,cx=0,hx=0;const P=f.pt;
+  if(f.moving){f.walk+=dt*9;tL=Math.sin(f.walk)*.6;tR=-tL;cy=Math.abs(Math.sin(f.walk))*.04}
+  else{tL=tR=Math.sin(P*1.3)*.04;cy=Math.sin(P*1.1)*.01}
+  switch(f.pose){
+   case"raise":tL=tR=-2.8;zL=.35;zR=-.35;hx=-.25;break;
+   case"kneel":cy=-.42;cx=.15;tL=tR=-.55;zL=-.15;zR=.15;break;
+   case"sit":cy=-.55;tL=tR=-.9;zL=-.45;zR=.45;break;
+   case"bow":cx=.75;tL=tR=-.25;break;
+   case"throw":if(P<.6){tR=-2.9;zR=-.3;cx=-.1}else{tR=-.5;cx=.15}tL=-.5;break;
+   case"smash":if(P<.65){tL=tR=-3;cx=-.12}else{tL=tR=-.25;cx=.4}break;
+   case"write":tR=-1.15+Math.sin(P*10)*.08;zR=.2+Math.sin(P*14)*.12;tL=-.95;zL=-.2;cx=.22;hx=.35;break;
+   case"eat":tR=-2.35;zR=.65;tL=-.3;break;
+   case"weep":tL=tR=-2.2;zL=-.65;zR=.65;cx=.3;hx=.45;break;
+   case"look":hx=-.5;tL=tR=-.4;zL=.45;zR=-.45;break;
+  }
+  if(f.fall){f.fall=Math.min(1,f.fall+dt*1.4);cx=-1.5*ease(f.fall);cy=-.05}
+  const k=Math.min(1,dt*(f.pose==="throw"||f.pose==="smash"?14:7));
+  f.aL.rotation.x=lerp(f.aL.rotation.x,tL,k);f.aR.rotation.x=lerp(f.aR.rotation.x,tR,k);
+  f.aL.rotation.z=lerp(f.aL.rotation.z,zL,k);f.aR.rotation.z=lerp(f.aR.rotation.z,zR,k);
+  f.core.position.y=lerp(f.core.position.y,cy,k);f.core.rotation.x=lerp(f.core.rotation.x,cx,f.fall?1:k);f.head.rotation.x=lerp(f.head.rotation.x,hx,k);
+}
+
+/* ---------- builder ---------- */
+function makeB(){
+  const add=m=>{scene.add(m);return m};
+  const B={r:rnd,
+  box(x,y,z,w,h,d,c,e,ei){const m=add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),M(c,e,ei)));m.position.set(x,H(x,z)+y+h/2,z);if(w*d>8&&y<1)LV.solids.push({x,z,r:Math.min(w,d)/2+.2,box:[w/2,d/2]});return m},
+  cyl(x,y,z,rt,rb,h,c,seg=8,e=null,rot=0,op=null){const m=add(new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg,1,op!=null),op!=null?new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false}):M(c,e)));m.position.set(x,H(x,z)+y+(rot?0:h/2),z);m.rotation.z=rot;if(rb>.35&&!rot&&op==null)LV.solids.push({x,z,r:rb+.25});return m},
+  cone(x,y,z,r,h,c,rx=0){const m=add(new THREE.Mesh(new THREE.ConeGeometry(r,h,8),M(c)));m.position.set(x,H(x,z)+y+h/2,z);m.rotation.x=rx;return m},
+  sph(x,y,z,r,c,e,sc){const m=add(new THREE.Mesh(new THREE.SphereGeometry(r,10,8),M(c,e,1)));m.position.set(x,y+(L.water?0:H(x,z)),z);if(sc)m.scale.set(...sc);return m},
+  mtn(x,z,r,h,c,snow){const m=add(new THREE.Mesh(new THREE.ConeGeometry(r,h,8,3),M(c)));m.position.set(x,H(x,z)+h/2-.6,z);m.rotation.y=rnd()*3;const hd=[m];if(snow){const s=add(new THREE.Mesh(new THREE.ConeGeometry(r*.34,h*.34,8),M("#e8eef8")));s.position.set(x,H(x,z)-.6+h*.83+.05,z);s.rotation.y=m.rotation.y;hd.push(s)}const mk=snow?"snowpeak":(r<=10?"hill":"desertmtn");placeModel(mk,x,z,{len:r*2.1,ry:rnd()*6.28,y:-.8,hide:hd});LV.solids.push({x,z,r:r*.85});return m},
+  rock(x,z,s,c){const m=add(new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),M(c)));m.position.set(x,H(x,z)+s*.4,z);m.rotation.set(rnd()*3,rnd()*3,0);if(L.rockModel&&s>=.6)placeModel(L.rockModel,x,z,{h:s*1.5,ry:rnd()*6.28,y:-.15,hide:[m]});if(s>.9)LV.solids.push({x,z,r:s*.9});return m},
+  tree(x,z,s=1,c="#3f6a2e"){const cr=B.tree0(x,z,s,c);if(L.flora){const k=Array.isArray(L.flora)?L.flora[Math.floor(rnd()*L.flora.length)]:L.flora;placeModel(k,x,z,{h:(k==="willow"?4.6:4.2)*s,ry:rnd()*6.28,hide:[cr,cr.userData.trunk]})}return cr},
+  tree0(x,z,s=1,c="#3f6a2e"){const t=add(new THREE.Mesh(new THREE.CylinderGeometry(.12*s,.2*s,1.8*s,6),M("#5a3a22")));t.position.set(x,H(x,z)+.9*s,z);const cr=add(new THREE.Mesh(new THREE.IcosahedronGeometry(1.15*s,0),M(c)));cr.position.set(x,H(x,z)+2.3*s,z);cr.scale.y=.85;cr.rotation.y=rnd()*3;cr.userData.trunk=t;LV.solids.push({x,z,r:.35*s+.2});return cr},
+  palm(x,z,s=1){const pm=[];const lean=(rnd()-.5)*.3;const t=add(new THREE.Mesh(new THREE.CylinderGeometry(.1*s,.16*s,3.4*s,6),M("#7a5a3a")));t.position.set(x,H(x,z)+1.7*s,z);t.rotation.z=lean;for(let i=0;i<7;i++){const l=add(new THREE.Mesh(new THREE.BoxGeometry(1.8*s,.04,.4*s),M("#4a7a2a")));const a=i/7*Math.PI*2;l.position.set(x+Math.cos(a)*.8*s-lean*1.6*s,H(x,z)+3.35*s,z+Math.sin(a)*.8*s);l.rotation.set(0,-a,-.35);pm.push(l)}pm.push(t);placeModel("palm",x,z,{h:5.2*s,ry:rnd()*6.28,hide:pm});LV.solids.push({x,z,r:.35})},
+  pyr(x,z,s,c){const m=add(new THREE.Mesh(new THREE.ConeGeometry(s,s*.95,4),M(c)));m.position.set(x,H(x,z)+s*.47,z);m.rotation.y=Math.PI/4;placeModel("pyramid",x,z,{h:s*.95,ry:.3,hide:[m]});LV.solids.push({x,z,r:s*.75})},
+  zig(x,z,s,c){const ms=[];[[1,.2],[.74,.2],[.5,.18],[.3,.16]].reduce((y,[w,h])=>{const m=add(new THREE.Mesh(new THREE.BoxGeometry(s*w,s*h,s*w),M(c)));m.position.set(x,H(x,z)+y+s*h/2,z);ms.push(m);return y+s*h},0);LV.solids.push({x,z,r:s*.55});placeModel("ziggurat",x,z,{len:s*1.15,ry:-Math.PI/2,hide:ms})},
+  water(x,z,w,d,c,y=.05){const col=new THREE.Color(c).multiplyScalar(.55);const m=add(new THREE.Mesh(new THREE.PlaneGeometry(w,d),new THREE.MeshStandardMaterial({color:col,transparent:true,opacity:.72,roughness:.35,metalness:.1})));m.rotation.x=-Math.PI/2;m.position.set(x,y,z);LV.waters.push(m);return m},
+  disc(x,z,r,c){const m=add(new THREE.Mesh(new THREE.CircleGeometry(r,24),M(c)));m.rotation.x=-Math.PI/2;m.position.set(x,H(x,z)+.06,z)},
+  glow(x,y,z,s,c){const sp=sprite(c,s,.8);sp.position.set(x,H(x,z)+y,z);add(sp);return sp},
+  ring(x,y,z,R,t,c,e,rx=0,op,anim){const mat=op!=null&&op<1?new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:op,fog:false,depthWrite:false}):M(c,e,1);const m=add(new THREE.Mesh(new THREE.TorusGeometry(R,t,8,48),mat));m.position.set(x,(L.water?0:H(x,z))+y,z);m.rotation.x=rx;if(anim)LV.upd.push(dt=>{m.rotation.y+=dt*(anim==="spin"?.9:-.6);m.rotation.z+=dt*.4});return m},
+  fire(x,y,z,s=1){const g=new THREE.Group();const a=new THREE.Mesh(new THREE.ConeGeometry(.35*s,1.1*s,7),M("#ff7a1a","#ff5a0a",1.2));const b=new THREE.Mesh(new THREE.ConeGeometry(.2*s,.7*s,7),M("#ffe07a","#ffd040",1.4));a.position.y=.55*s;b.position.y=.4*s;g.add(a,b);
+    if(FXT.fire){a.visible=b.visible=false;const fs=new THREE.Sprite(new THREE.SpriteMaterial({map:FXT.fire[0],transparent:true,depthWrite:false,fog:false}));fs.scale.set(1.5*s,1.5*s,1);fs.position.y=.6*s;g.add(fs);const ph0=Math.floor(rnd()*16);LV.upd.push((dt,t)=>{fs.material.map=FXT.fire[(Math.floor(t*14)+ph0)%16]})}const sp=sprite("#ff9a3a",4*s,.9);sp.position.y=.6*s;g.add(sp);g.position.set(x,(L.water?0:H(x,z))+y,z);add(g);const pl=new THREE.PointLight("#ff9040",1.4,10*s);pl.position.set(x,g.position.y+1,z);add(pl);const ph=rnd()*9;LV.upd.push((dt,t)=>{const f=1+Math.sin(t*13+ph)*.08+Math.sin(t*7.3+ph)*.06;a.scale.set(f,1/f*1.05,f);b.scale.set(1/f,f,1/f);pl.intensity=1.2+Math.sin(t*11+ph)*.3});return g},
+  fig(o,x,z,ry=0,pose){const f=makeFig(o);f.g.position.set(x,(L.water?0:H(x,z)),z);f.g.rotation.y=ry;if(pose)setPose(f,pose);add(f.g);LV.npcs.push(f);if(f.s>1.6)LV.solids.push({x,z,r:.4*f.s});else LV.solids.push({x,z,r:.45});if(o.model)figModel(f,o.model,o.mh||1.8);else if(o.wings)figModel(f,"angel",1.85);return f},
+  model(key,x,z,opt){return placeModel(key,x,z,opt||{})},
+  wall(x,z,w,h,ry,c){const m=add(new THREE.Mesh(new THREE.BoxGeometry(w,h,1),M(c)));m.position.set(x,H(x,z)+h/2,z);m.rotation.y=ry;return m},
+  cross(x,z,s,yb){const y=H(x,z)+yb;const v=add(new THREE.Mesh(new THREE.BoxGeometry(.22*s,3.4*s,.22*s),M("#2a1a10")));v.position.set(x,y+1.7*s,z);const h=add(new THREE.Mesh(new THREE.BoxGeometry(1.8*s,.2*s,.2*s),M("#2a1a10")));h.position.set(x,y+2.7*s,z);return[v,h]},
+  lamp(x,z){B.cyl(x,0,z,.08,.12,.3,"#8a6a3a");const sp=sprite("#ffb050",2.5,.9);sp.position.set(x,H(x,z)+.5,z);add(sp)},
+  scatter(n,fn,rmin,rmax,cl,filter){let c=0,tries=0;while(c<n&&tries<n*20){tries++;let x,z;if(cl){const a=rnd()*6.28,r=rnd()*cl[2];x=cl[0]+Math.cos(a)*r;z=cl[1]+Math.sin(a)*r}else{const a=rnd()*6.28,r=rmin+rnd()*(rmax-rmin);x=Math.cos(a)*r;z=Math.sin(a)*r}
+    if(L.pts.some(p=>Math.hypot(p.pos[0]-x,p.pos[1]-z)<(cl?3:5)))continue;if(Math.hypot(x-L.spawn[0],z-L.spawn[1])<4)continue;if(L.portal&&Math.hypot(x-L.portal[0],z-L.portal[1])<4)continue;if(filter&&!filter(x,z))continue;fn(x,z);c++}},
+  lightning(){const fl=new THREE.DirectionalLight("#cfe0ff",0);fl.position.set(0,50,-30);add(fl);let nt=2;LV.upd.push((dt,t)=>{nt-=dt;if(nt<0){fl.intensity=3.5;nt=2.5+rnd()*5}fl.intensity*=Math.pow(.02,dt)})},
+  shelves(){const c=document.createElement("canvas");c.width=256;c.height=256;const g=c.getContext("2d");g.fillStyle="#1a0e06";g.fillRect(0,0,256,256);for(let row=0;row<4;row++){let x=0;while(x<256){const w=6+rnd()*10,h=44+rnd()*16;g.fillStyle=`hsl(${rnd()*40+(rnd()<.3?180:0)},${30+rnd()*40}%,${18+rnd()*25}%)`;g.fillRect(x,row*64+64-h,w-1,h);g.fillStyle="rgba(230,190,110,.5)";g.fillRect(x+1,row*64+64-h+8,w-3,2);x+=w}g.fillStyle="#3a2412";g.fillRect(0,row*64+60,256,4)}
+    const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;const mat=new THREE.MeshStandardMaterial({map:tex,roughness:1});
+    for(let i=0;i<14;i++){const a=i/14*Math.PI*2+.22;const sh=add(new THREE.Mesh(new THREE.BoxGeometry(7,10,1.2),mat));sh.position.set(Math.sin(a)*33,5,Math.cos(a)*33);sh.rotation.y=a}
+    for(const[x,z,ry]of[[-20,4,0],[20,4,0],[-22,-14,0],[22,-14,0]]){const sh=add(new THREE.Mesh(new THREE.BoxGeometry(1.2,7,8),mat));sh.position.set(x,3.5,z);sh.rotation.y=ry;LV.solids.push({x,z,r:2.5})}}
+  };
+  return B;
+}
+
+/* ---------- sky ---------- */
+function skyDome(cols){const c=document.createElement("canvas");c.width=4;c.height=256;const g=c.getContext("2d");const gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,cols[0]);gr.addColorStop(.42,cols[1]);gr.addColorStop(.52,cols[2]);gr.addColorStop(1,cols[2]);g.fillStyle=gr;g.fillRect(0,0,4,256);const t=new THREE.CanvasTexture(c);
+  const m=new THREE.Mesh(new THREE.SphereGeometry(500,24,16),new THREE.MeshBasicMaterial({map:t,side:THREE.BackSide,fog:false,depthWrite:false}));return m}
+
+/* ---------- weather particles ---------- */
+let WX=null;
+const WXT={};function cropTex(url,key){const im=new Image();im.onload=()=>{WXT[key]=canvasTex(128,128,(g)=>{g.drawImage(im,0,0,im.width/4,im.height/4,0,0,128,128)});if(WX&&WX.type===key){WX.p.material.map=WXT[key];WX.p.material.needsUpdate=true}};im.src=url}
+["rain","snow","embers"].forEach(k=>cropTex(`assets/fx/fx_${k}.png`,k));cropTex("assets/fx/fx_dust_motes.png","dust");
+function makeWeather(type){
+  const N={rain:900,snow:600,embers:260,dust:220,light:240}[type]||200;const pos=new Float32Array(N*3),vel=new Float32Array(N);
+  for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*50;pos[i*3+1]=Math.random()*18;pos[i*3+2]=(Math.random()-.5)*50;vel[i]=Math.random()}
+  const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.BufferAttribute(pos,3));
+  const col={rain:"#9ab8d0",snow:"#ffffff",embers:"#ff8a3a",dust:"#e8d0a0",light:"#ffe8a0"}[type];
+  const mat=new THREE.PointsMaterial({map:WXT[type]||glowTex,color:col,size:{rain:.09,snow:.14,embers:.16,dust:.07,light:.15}[type],transparent:true,opacity:type==="dust"?.5:.85,depthWrite:false,blending:type==="embers"||type==="light"?THREE.AdditiveBlending:THREE.NormalBlending});
+  const p=new THREE.Points(geo,mat);p.frustumCulled=false;scene.add(p);WX={p,pos,vel,N,type};
+}
+function updWeather(dt,t){if(!WX)return;const{pos,vel,N,type}=WX;const px=P.x,pz=P.z;
+  for(let i=0;i<N;i++){const j=i*3;let x=pos[j],y=pos[j+1],z=pos[j+2];
+    if(type==="rain"){y-=dt*(16+vel[i]*6);x-=dt*2}else if(type==="snow"){y-=dt*(.8+vel[i]*.6);x+=Math.sin(t+i)*dt*.5}
+    else if(type==="embers"){y+=dt*(1+vel[i]*1.5);x+=Math.sin(t*2+i)*dt*.6}else if(type==="light"){y+=dt*(.3+vel[i]*.4);x+=Math.sin(t+i)*dt*.2}else{x+=dt*(.4+vel[i]*.5);y+=Math.sin(t+i)*dt*.1}
+    const base=H(px,pz);if(y<base-1)y=base+16;if(y>base+18)y=base;
+    if(x-px>25)x-=50;if(x-px<-25)x+=50;if(z-pz>25)z-=50;if(z-pz<-25)z+=50;
+    pos[j]=x;pos[j+1]=y;pos[j+2]=z}
+  WX.p.geometry.attributes.position.needsUpdate=true}
+
+/* ---------- player ---------- */
+const P={x:0,z:0,yaw:0,pitch:0,fig:null,third:false};
+function eyeY(){return H(P.x,P.z)+1.62}
+
+/* ---------- level load ---------- */
+function disposeScene(){scene.traverse(o=>{if(o.geometry&&!o.userData.keep)o.geometry.dispose();if(o.material&&!o.material.userData.keep&&o.material!==addM){if(o.material.map&&o.material.map!==glowTex&&!KEEPTEX.has(o.material.map)&&!(FXT.fire||[]).includes(o.material.map)&&!(FXT.glyph||[]).includes(o.material.map))o.material.map.dispose();o.material.dispose()}})}
+function loadLevel(i){
+  disposeScene();FIGS.length=0;scene=new THREE.Scene();L=LEVELS[i];seed=7+i*131;
+  LV={solids:[],npcs:[],upd:[],waters:[],markers:[],portal:null,portalOn:false,fx:[]};
+  const li=i,art=ART[i+1];const dome=skyDome(L.sky);scene.add(dome);
+  scene.fog=new THREE.Fog(art?art[2]:L.fog[0],L.interior?18:34,L.interior?95:200);scene.background=new THREE.Color(art?art[1]:L.sky[0]);
+  loadTex(`assets/sky/sky_${SKYF[i]}.jpg`,t=>{if(L!==LEVELS[li])return;t.wrapS=THREE.RepeatWrapping;t.repeat.x=-1;const R=360,Hc=Math.PI*R,f=art[0];
+    const cyl=new THREE.Mesh(new THREE.CylinderGeometry(R,R,Hc,72,1,true),new THREE.MeshBasicMaterial({map:t,side:THREE.BackSide,fog:false,depthWrite:false}));cyl.renderOrder=-2;LV.pano=cyl;LV.panoY=(L.interior?4:3)-(Hc/2-f*Hc);scene.add(cyl);scene.remove(dome)});
+  preCard(i);
+  scene.add(new THREE.HemisphereLight(L.hemi[0],L.hemi[1],L.hemi[2]));
+  const sun=new THREE.DirectionalLight(L.sun[0],L.sun[1]);sun.position.set(30,60,25);scene.add(sun);
+  scene.add(new THREE.AmbientLight("#ffffff",.12));
+  // ground
+  const gTex=`assets/ground/ground_${SKYF[i]}.jpg`;
+  if(L.water){const g=new THREE.Mesh(new THREE.PlaneGeometry(500,500,60,60),new THREE.MeshStandardMaterial({color:L.ground,roughness:.25,metalness:.35,flatShading:true}));g.rotation.x=-Math.PI/2;scene.add(g);LV.sea=g;
+    loadTex(gTex,t=>{if(L!==LEVELS[li])return;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(60,60);g.material.map=t;g.material.color.set("#c8d8e0");g.material.needsUpdate=true})}
+  else{const geo=new THREE.PlaneGeometry(420,420,150,150);geo.rotateX(-Math.PI/2);const p=geo.attributes.position,cols=new Float32Array(p.count*3),base=new THREE.Color(L.ground),tmp=new THREE.Color();
+    for(let k=0;k<p.count;k++){const x=p.getX(k),z=p.getZ(k),h=H(x,z);p.setY(k,h);const v=(Math.sin(x*1.7+z*.9)*.5+.5)*.12+Math.min(.25,Math.max(-.2,h*.04));const lum=.8+v;tmp.setRGB(lum,lum,lum);cols[k*3]=tmp.r;cols[k*3+1]=tmp.g;cols[k*3+2]=tmp.b}
+    geo.setAttribute("color",new THREE.BufferAttribute(cols,3));geo.computeVertexNormals();
+    const gm=new THREE.MeshStandardMaterial({vertexColors:true,flatShading:!L.interior,roughness:1,color:L.ground});scene.add(new THREE.Mesh(geo,gm));
+    loadTex(gTex,t=>{if(L!==LEVELS[li])return;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(L.interior?84:60,L.interior?84:60);t.anisotropy=renderer.capabilities.getMaxAnisotropy();gm.map=t;gm.color.set(L.interior?"#e0d0c0":"#ffffff");gm.needsUpdate=true})}
+  if(L.stars){const n=900,a=new Float32Array(n*3);for(let k=0;k<n;k++){const th=Math.random()*6.28,ph=Math.random()*1.35;a[k*3]=Math.cos(th)*Math.sin(ph)*420;a[k*3+1]=Math.cos(ph)*420;a[k*3+2]=Math.sin(th)*Math.sin(ph)*420}const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(a,3));scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:"#fff",size:1.6,sizeAttenuation:false,fog:false,transparent:true,opacity:.9})))}
+  const B=makeB();L.build(B);
+  // markers
+  const done=S.done[L.id]||[];
+  L.pts.forEach(pt=>{const[x,z]=pt.pos,y=H(x,z);const g=new THREE.Group();g.position.set(x,y,z);
+    const pm=new THREE.MeshBasicMaterial({map:beamTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,fog:false,opacity:.75});
+    const pil=new THREE.Mesh(new THREE.CylinderGeometry(.55,.9,26,20,1,true),pm);pil.position.y=13;g.add(pil);
+    const rune=new THREE.Mesh(new THREE.PlaneGeometry(3.6,3.6),new THREE.MeshBasicMaterial({map:runeTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,opacity:.85}));rune.rotation.x=-Math.PI/2;rune.position.y=.08;g.add(rune);pil.userData.rune=rune;
+    const orb=sprite("#ffe08a",2.2,1);orb.position.y=2.4;g.add(orb);const orb2=new THREE.Sprite(new THREE.SpriteMaterial({map:sparkTex,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));orb2.scale.setScalar(1.1);orb2.position.y=2.4;g.add(orb2);
+    scene.add(g);const m={pt,g,pil,orb,orb2,done:done.includes(pt.id)};if(m.done)dimMarker(m);LV.markers.push(m)});
+  // portal (keep inside walkable radius, clear blockers)
+  if(L.portal){let[px,pz]=L.portal;const pd=Math.hypot(px,pz);if(pd>27){px*=27/pd;pz*=27/pd;L.portal=[px,pz]}LV.solids=LV.solids.filter(s=>Math.hypot(s.x-px,s.z-pz)>s.r+1.8);const[x,z]=L.portal;const g=new THREE.Group();g.position.set(x,H(x,z),z);const ring=new THREE.Mesh(new THREE.TorusGeometry(2.1,.09,10,64),M("#fff0c0","#ffd070",1.5));ring.position.y=2.4;g.add(ring);
+    const disc=new THREE.Mesh(new THREE.PlaneGeometry(5.6,5.6),new THREE.MeshBasicMaterial({map:doorTex,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,depthWrite:false,fog:false}));disc.position.y=2.4;g.add(disc);
+    const disc2=new THREE.Mesh(new THREE.PlaneGeometry(4.4,4.4),new THREE.MeshBasicMaterial({map:runeTex,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,depthWrite:false,fog:false}));disc2.position.y=2.4;disc2.position.z=.02;g.add(disc2);
+    const gr=new THREE.Mesh(new THREE.PlaneGeometry(7,7),new THREE.MeshBasicMaterial({map:runeTex,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));gr.rotation.x=-Math.PI/2;gr.position.y=.08;g.add(gr);ring.userData.d2=disc2;ring.userData.gr=gr;
+    const sp=sprite("#ffe0a0",9,.9);sp.position.y=2.3;g.add(sp);const pil=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,60,16,1,true),addM.clone());pil.material.opacity=.22;pil.position.y=30;g.add(pil);
+    g.visible=false;g.scale.setScalar(.01);scene.add(g);LV.portal={g,ring,disc}}
+  // player
+  P.x=L.spawn[0];P.z=L.spawn[1];P.yaw=0;P.pitch=0;
+  P.fig=makeFig({robe:"#6a4a2e",skin:"#9a6a44",hair:"#2a1a0e",beard:"#2a1a0e",player:1});P.fig.npc=false;scene.add(P.fig.g);
+  P.rig=null;playerRig();const reed=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.5,4),M("#d8b878"));reed.position.set(0,-.66,.1);reed.rotation.x=1.2;P.fig.aR.add(reed);
+  makeWeather(L.fx);
+  if(L.pts.every(p=>(S.done[L.id]||[]).includes(p.id)))openPortal(true);
+  $("eraTag").textContent=`${L.n} · ${L.t.toUpperCase()}`;playMusic(i);updObj();hud();tuneAudio(i);
+}
+function dimMarker(m){m.pil.visible=false;if(m.pil.userData.rune)m.pil.userData.rune.visible=false;m.orb.material.opacity=.25;m.orb.scale.setScalar(1);m.orb2.visible=false}
+function openPortal(instant){if(!LV.portal||LV.portalOn)return;LV.portalOn=true;LV.portal.g.visible=true;if(instant)LV.portal.g.scale.setScalar(1)}
+
+/* ---------- input ---------- */
+const keys={};const JOY={id:null,x0:0,y0:0,x:0,y:0},LOOK={id:null,x:0,y:0};
+addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=1;if(e.key.toLowerCase()==="e"&&mode==="play"&&nearPt)openDlg(nearPt);if(e.key===" "&&CUT)nextShot()});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=0);
+const tl=$("touch");
+tl.addEventListener("touchstart",e=>{e.preventDefault();if(CUT){nextShot();return}if(mode!=="play")return;for(const t of e.changedTouches){if(t.clientX<innerWidth*.45&&JOY.id===null){JOY.id=t.identifier;JOY.x0=t.clientX;JOY.y0=t.clientY;JOY.x=JOY.y=0;const j=$("joy");j.style.display="block";j.style.left=t.clientX+"px";j.style.top=t.clientY+"px";$("knob").style.transform="translate(-50%,-50%)"}else if(LOOK.id===null){LOOK.id=t.identifier;LOOK.x=t.clientX;LOOK.y=t.clientY}}},{passive:false});
+tl.addEventListener("touchmove",e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===JOY.id){let dx=t.clientX-JOY.x0,dy=t.clientY-JOY.y0;const d=Math.hypot(dx,dy),mx=55;if(d>mx){dx*=mx/d;dy*=mx/d}JOY.x=dx/mx;JOY.y=dy/mx;$("knob").style.transform=`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`}else if(t.identifier===LOOK.id){P.yaw-=(t.clientX-LOOK.x)*.0055;P.pitch=Math.max(-1.2,Math.min(1.2,P.pitch-(t.clientY-LOOK.y)*.0045));LOOK.x=t.clientX;LOOK.y=t.clientY}}},{passive:false});
+const tend=e=>{for(const t of e.changedTouches){if(t.identifier===JOY.id){JOY.id=null;JOY.x=JOY.y=0;$("joy").style.display="none"}if(t.identifier===LOOK.id)LOOK.id=null}};
+tl.addEventListener("touchend",tend);tl.addEventListener("touchcancel",tend);
+let mdown=false,mx0=0,my0=0;
+tl.addEventListener("mousedown",e=>{if(CUT){nextShot();return}mdown=true;mx0=e.clientX;my0=e.clientY});
+addEventListener("mouseup",()=>mdown=false);
+addEventListener("mousemove",e=>{if(!mdown||mode!=="play")return;P.yaw-=(e.clientX-mx0)*.005;P.pitch=Math.max(-1.2,Math.min(1.2,P.pitch-(e.clientY-my0)*.004));mx0=e.clientX;my0=e.clientY});
+
+/* ---------- movement ---------- */
+let nearPt=null;
+function movePlayer(dt){
+  let ix=JOY.x,iz=JOY.y;if(keys.w||keys.arrowup)iz=-1;if(keys.s||keys.arrowdown)iz=1;if(keys.a||keys.arrowleft)ix=-1;if(keys.d||keys.arrowright)ix=1;
+  if(keys.q)P.yaw+=dt*2;
+  const mag=Math.min(1,Math.hypot(ix,iz));const fx=-Math.sin(P.yaw),fz=-Math.cos(P.yaw),rx=Math.cos(P.yaw),rz=-Math.sin(P.yaw);
+  const sp=5.2*dt;let nx=P.x+(fx*-iz+rx*ix)*sp,nz=P.z+(fz*-iz+rz*ix)*sp;
+  for(const s of LV.solids){const dx=nx-s.x,dz=nz-s.z,d=Math.hypot(dx,dz),r=s.r+.35;if(d<r&&d>.001){nx=s.x+dx/d*r;nz=s.z+dz/d*r}}
+  const d=Math.hypot(nx,nz);if(d>RAD){nx*=RAD/d;nz*=RAD/d}
+  P.x=nx;P.z=nz;P.fig.moving=mag>.08;
+  P.fig.g.position.set(P.x,H(P.x,P.z),P.z);P.fig.g.rotation.y=P.yaw+Math.PI;
+  // near point
+  nearPt=null;let best=3.8;for(const m of LV.markers){if(m.done)continue;const dd=Math.hypot(m.pt.pos[0]-P.x,m.pt.pos[1]-P.z);if(dd<best){best=dd;nearPt=m}}
+  const ab=$("act");if(nearPt){ab.style.display="flex";$("actL").textContent=nearPt.pt.label}else ab.style.display="none";
+  // portal
+  if(LV.portalOn&&L.portal&&Math.hypot(L.portal[0]-P.x,L.portal[1]-P.z)<2.8)outroCut();
+}
+function compass(){
+  let tx,tz,lbl;const rem=LV.markers.filter(m=>!m.done);
+  if(rem.length){let b=1e9;for(const m of rem){const d=Math.hypot(m.pt.pos[0]-P.x,m.pt.pos[1]-P.z);if(d<b){b=d;tx=m.pt.pos[0];tz=m.pt.pos[1];lbl=m.pt.label}}}
+  else if(LV.portalOn){tx=L.portal[0];tz=L.portal[1];lbl="The Light"}else{$("comp").style.display="none";return}
+  const ang=Math.atan2(tx-P.x,tz-P.z),fw=P.yaw+Math.PI;let rel=ang-fw;rel=Math.atan2(Math.sin(rel),Math.cos(rel));
+  $("comp").style.display="flex";$("arrow").style.transform=`rotate(${-rel}rad)`;$("compL").textContent=`${lbl} · ${Math.round(Math.hypot(tx-P.x,tz-P.z))}m`;
+}
+
+/* ---------- camera ---------- */
+const camT=new THREE.Vector3(),camL=new THREE.Vector3();
+function playCam(dt){
+  if(P.third){const fx=-Math.sin(P.yaw),fz=-Math.cos(P.yaw);const hy=H(P.x,P.z);
+    camT.set(P.x-fx*4.2,hy+2.3-P.pitch*1.8,P.z-fz*4.2);camera.position.lerp(camT,Math.min(1,dt*8));
+    camL.set(P.x+fx*2,hy+1.4+P.pitch*2,P.z+fz*2);camera.lookAt(camL);P.fig.g.visible=true}
+  else{camera.position.set(P.x,eyeY()+(P.fig.moving?Math.sin(P.fig.walk*2)*.035:0),P.z);camera.rotation.set(P.pitch,P.yaw,0);P.fig.g.visible=false}
+}
+
+/* ---------- cutscenes ---------- */
+let CUT=null;
+const words=s=>s.split(/\s+/).length,capDur=s=>Math.max(3.6,Math.min(13,2.4+words(s)*.29));
+function playCut(shots,done){CUT={shots,i:-1,t:0,done};mode="cut";document.body.classList.add("cine");$("act").style.display="none";nextShot()}
+function nextShot(){if(!CUT)return;CUT.i++;CUT.t=0;if(CUT.i>=CUT.shots.length){endCut();return}const sh=CUT.shots[CUT.i];if(sh.on)sh.on();const cp=$("cap");if(sh.cap){cp.innerHTML=(sh.head?`<small>${sh.head}</small>`:"")+fmt(sh.cap);cp.classList.remove("on");void cp.offsetWidth;cp.classList.add("on")}else cp.classList.remove("on")}
+function endCut(){const c=CUT;CUT=null;document.body.classList.remove("cine");$("cap").classList.remove("on");P.fig.g.visible=P.third;mode="play";if(c&&c.done)c.done()}
+function skipCut(){if(!CUT)return;stopNarr();const c=CUT;CUT=null;document.body.classList.remove("cine");$("cap").classList.remove("on");mode="play";P.fig.g.visible=P.third;if(c.done)c.done()}
+$("skip").onclick=e=>{e.stopPropagation();skipCut()};
+function updCut(dt){const sh=CUT.shots[CUT.i];if(!sh)return;CUT.t+=dt;const d=sh.d||capDur(sh.cap||"");const k=ease(Math.min(1,CUT.t/d));
+  const p=sh.cam(k),l=sh.look(k);camera.position.set(p[0],p[1],p[2]);camL.set(l[0],l[1],l[2]);camera.lookAt(camL);if(sh.upd)sh.upd(k,dt);P.fig.g.visible=true;
+  if(CUT.t>=d+.25)nextShot()}
+const orb=(c,r,h,a)=>[c[0]+Math.sin(a)*r,c[1]+h,c[2]+Math.cos(a)*r];
+
+function introCut(after){showCard(S.lvl,()=>introCut2(after))}
+function showCard(i,cb){const el=$("card"),im=CARDS[i];preCard(i);mode="card";document.body.classList.add("cine");$("act").style.display="none";
+  const c=[0,H(0,0),-8];const p=orb(c,46,24,.4);camera.position.set(p[0],p[1],p[2]);camera.lookAt(c[0],c[1]+2,c[2]);
+  el.querySelector("img").src=im.src;el.querySelector(".bgb").style.backgroundImage=`url(${im.src})`;el.classList.add("on");
+  let done=false;const fin=()=>{if(done)return;done=true;clearTimeout(tt);el.classList.add("out");setTimeout(()=>{el.classList.remove("on","out")},700);cb()};
+  const tt=setTimeout(fin,4200);el.onclick=fin;el.ontouchstart=e=>{e.preventDefault();fin()}}
+function introCut2(after){narrate(S.lvl,"in");
+  const c=[0,H(0,0),-8],pc=()=>[P.x,H(P.x,P.z),P.z];const sh=[];
+  sh.push({head:`CHAPTER ${L.n}`,cap:`${L.t}<br><em class="sub">${L.sub}</em>`,d:4.6,cam:k=>orb(c,46-k*8,24-k*6,.4+k*.7),look:k=>[c[0],c[1]+2,c[2]]});
+  L.intro.forEach((t,i)=>{const a0=P.yaw+Math.PI+(i%2?-1:1)*(.9+i*.4);sh.push({cap:t,on:()=>{setPose(P.fig,i===0?"look":"idle")},cam:k=>orb(pc(),5.5-k*1.2,2.4-k*.6,a0+k*.5*(i%2?-1:1)),look:k=>{const p=pc();return[p[0],p[1]+1.3,p[2]]}})});
+  sh.push({d:1.4,cap:"",on:()=>setPose(P.fig,"idle"),cam:k=>{const p=pc();const b=orb(p,3.5,2.2,P.yaw);return[lerp(b[0],p[0],k),lerp(b[1],p[1]+1.62,k),lerp(b[2],p[2],k)]},look:k=>{const p=pc();return[p[0]-Math.sin(P.yaw)*6,p[1]+1.5,p[2]-Math.cos(P.yaw)*6]}});
+  playCut(sh,after);
+}
+function splitCap(t){const s=t.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g)||[t];const out=[];let cur="";for(const x of s){if(words(cur+x)>34&&cur){out.push(cur.trim());cur=x}else cur+=x}if(cur.trim())out.push(cur.trim());return out}
+function actionCut(m,ch,after){
+  const[tx,tz]=m.pt.pos;const ang=Math.atan2(tx-P.x,tz-P.z);P.yaw=ang-Math.PI;P.fig.g.rotation.y=ang;P.fig.moving=false;
+  const pc=[P.x,H(P.x,P.z),P.z];const act=ch[4]||"look";const parts=splitCap(ch[3]);
+  const shots=parts.map((cap,i)=>{const a0=ang+(i%2?-1.9:1.5);return{cap,on:i===0?()=>{setPose(P.fig,act);actionFx(act,m)}:null,cam:k=>orb(pc,i?3.6:5,i?1.4:2.2,a0+k*(i%2?-.5:.55)),look:k=>[pc[0]+Math.sin(ang)*.8,pc[1]+1.2,pc[2]+Math.cos(ang)*.8]}});
+  playCut(shots,()=>{setPose(P.fig,"idle");after()});
+}
+function outroCut(){
+  if(mode!=="play")return;const[tx,tz]=L.portal;const sx=P.x,sz=P.z,ang=Math.atan2(tx-sx,tz-sz);P.fig.g.rotation.y=ang;
+  const parts=splitCap(L.outro);const shots=parts.map((cap,i)=>({cap,on:i===0?()=>{P.fig.moving=true;setPose(P.fig,"idle")}:null,
+    upd:(k,dt)=>{if(i===0){P.x=lerp(sx,tx,k);P.z=lerp(sz,tz,k);P.fig.g.position.set(P.x,H(P.x,P.z),P.z)}else{P.fig.moving=false;setPose(P.fig,"raise")}},
+    cam:k=>{const p=[P.x,H(P.x,P.z),P.z];return i===0?orb(p,5,1.6,ang+Math.PI+.6):orb([tx,H(tx,tz),tz],7+k*4,2+k*5,ang+Math.PI+.3-k*.3)},look:k=>[P.x,H(P.x,P.z)+1.6+(i?k*2:0),P.z]}));
+  narrate(S.lvl,"out");playCut(shots,()=>{mode="trans";flash(()=>{S.lvl++;save();if(S.lvl>=LEVELS.length){showEnd();return}gate(S.lvl,()=>{loadLevel(S.lvl);introCut(()=>{})})})});
+}
+function flash(cb){const f=$("flash");f.classList.add("on");setTimeout(()=>{cb();setTimeout(()=>f.classList.remove("on"),200)},900)}
+
+/* ---------- effects ---------- */
+function actionFx(act,m){
+  const hand=new THREE.Vector3();
+  if(act==="throw"){const tgt=LV.npcs.find(n=>n.tag==="goliath");setTimeout(()=>{if(!LV)return;P.fig.aR.getWorldPosition(hand);hand.y+=.5;const st=new THREE.Mesh(new THREE.SphereGeometry(.08,6,5),M("#888"));st.position.copy(hand);scene.add(st);
+    const to=tgt?tgt.g.position.clone().add(new THREE.Vector3(0,1.62*tgt.s,0)):hand.clone().add(new THREE.Vector3(0,2,-8));const fr=hand.clone();let t=0;
+    LV.fx.push(dt=>{t+=dt/.5;const k=Math.min(1,t);st.position.lerpVectors(fr,to,k);st.position.y+=Math.sin(k*Math.PI)*1.2;if(k>=1){scene.remove(st);burst(to,"#ffd080",14);if(tgt)tgt.fall=.01;return true}})},560)}
+  if(act==="smash")setTimeout(()=>{const p=new THREE.Vector3(P.x-Math.sin(P.yaw)*1,H(P.x,P.z)+.6,P.z-Math.cos(P.yaw)*1);burst(p,"#e8c070",26)},700);
+  if(act==="raise"){const p=new THREE.Vector3(P.x,H(P.x,P.z),P.z);const pil=new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,40,16,1,true),addM.clone());pil.material.opacity=0;pil.position.copy(p);pil.position.y+=20;scene.add(pil);let t=0;LV.fx.push(dt=>{t+=dt;pil.material.opacity=Math.min(.35,t*.4)*(t>4?Math.max(0,1-(t-4)):1);if(t>5){scene.remove(pil);return true}})}
+  if(act==="write"||act==="look"||act==="kneel"||act==="bow"||act==="eat"){let t=0,acc=0;LV.fx.push(dt=>{t+=dt;acc+=dt;if(acc>.12&&t<4){acc=0;P.fig.aR.getWorldPosition(hand);mote(hand,act==="write"?"#ffd890":"#bcd4ff")}return t>4})}
+}
+function burst(p,c,n){for(let i=0;i<n;i++){const b=new THREE.Sprite(new THREE.SpriteMaterial({map:sparkTex,color:c,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));b.scale.setScalar(.35+Math.random()*.35);b.position.copy(p);scene.add(b);const v=new THREE.Vector3((Math.random()-.5)*5,Math.random()*5+1,(Math.random()-.5)*5);let t=0;LV.fx.push(dt=>{t+=dt;v.y-=9.8*dt;b.position.addScaledVector(v,dt);b.rotation.x+=dt*5;if(t>1.4){scene.remove(b);return true}})}}
+function mote(p,c){let s;if(FXT.glyph&&c==="#ffd890"){s=new THREE.Sprite(new THREE.SpriteMaterial({map:FXT.glyph[Math.floor(Math.random()*16)],transparent:true,depthWrite:false,fog:false,color:"#ffe6a8"}));s.scale.setScalar(.5)}else s=sprite(c,.35,1);s.position.copy(p);scene.add(s);let t=0;const vx=(Math.random()-.5)*.6,vz=(Math.random()-.5)*.6;LV.fx.push(dt=>{t+=dt;s.position.y+=dt*.9;s.position.x+=vx*dt;s.position.z+=vz*dt;s.material.opacity=1-t/1.8;if(t>1.8){scene.remove(s);return true}})}
+
+/* ---------- dialogue ---------- */
+function openDlg(m){
+  mode="dlg";$("act").style.display="none";JOY.id=null;JOY.x=JOY.y=0;$("joy").style.display="none";
+  const pt=m.pt;const ang=Math.atan2(pt.pos[0]-P.x,pt.pos[1]-P.z);P.yaw=ang-Math.PI;P.pitch=-.05;
+  let h=`<div class="loc">${pt.loc}</div><div class="title">${pt.t}</div><div class="txt">`;
+  pt.p.forEach((p,i)=>h+=`<p style="animation-delay:${i*.45}s">${fmt(p)}</p>`);h+=`</div><div class="choices">`;
+  const d0=pt.p.length*.45+.15;
+  pt.c.forEach((c,i)=>{const[f,w,v]=c[1],tg=[];if(f)tg.push(`<b>✦</b> Faith +${f}`);if(w)tg.push(`<b>◈</b> Wisdom +${w}`);if(v)tg.push(`<b>◉</b> Vision +${v}`);if(c[2]&&!S.cx.includes(c[2]))tg.push("📜 Scroll");tg.push(`<i>${ACTN[c[4]]||""}</i>`);
+    h+=`<button class="ch" data-i="${i}" style="animation-delay:${d0+i*.12}s">${fmt(c[0])}<span class="tags">${tg.join(" &nbsp;")}</span></button>`});
+  h+=`</div><button class="back">Step away</button>`;
+  const d=$("dlg");d.querySelector(".in").innerHTML=h;d.classList.add("on");d.querySelector(".in").scrollTop=0;
+  d.querySelector(".txt").onclick=()=>d.querySelectorAll(".txt p,.ch").forEach(e=>e.style.animationDelay="0s");
+  d.querySelectorAll(".ch").forEach(b=>b.onclick=()=>choose(m,+b.dataset.i));
+  d.querySelector(".back").onclick=()=>{d.classList.remove("on");mode="play"};
+}
+const ACTN={raise:"raise your arms",kneel:"kneel",bow:"bow",throw:"sling a stone",smash:"strike",write:"write",eat:"eat",look:"behold",weep:"weep",sit:"sit"};
+function choose(m,i){
+  const c=m.pt.c[i];$("dlg").classList.remove("on");const[f,w,v]=c[1];S.f+=f;S.w+=w;S.v+=v;
+  let nc=null;if(c[2]&&!S.cx.includes(c[2])){S.cx.push(c[2]);nc=c[2]}if(c[2])addAll(c[2]);
+  m.done=true;(S.done[L.id]=S.done[L.id]||[]).push(m.pt.id);save();sfx();
+  actionCut(m,c,()=>{dimMarker(m);hud({f,w,v});if(nc)toast("📜 Scroll recovered: "+CX[nc][0]);updObj();
+    if(L.final&&m.pt.id==="final"){setTimeout(showEnd,600);return}
+    if(LV.markers.every(x=>x.done)&&!LV.portalOn){openPortal();setTimeout(()=>toast(L.final?"":"✦ A door of light has opened"),nc?2800:300)}});
+}
+function updObj(){if(!LV)return;const r=LV.markers.filter(m=>!m.done).length;$("obj").textContent=r?`${r} moment${r>1?"s":""} remain · follow the lights`:(L.final?"":"Walk into the door of light")}
+
+/* ---------- HUD / codex / toast ---------- */
+function hud(b){[["stF","f"],["stW","w"],["stV","v"]].forEach(([id,k])=>{const el=$(id);el.querySelector("b").textContent=S[k];if(b&&b[k]){el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump")}});$("cxN").textContent=S.cx.length+"/"+Object.keys(CX).length}
+let toastT;function toast(m){if(!m)return;const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),3000)}
+let cxTab="all",prevMode="play";
+function openCodex(){if(mode==="play"){prevMode="play";mode="codex"}const found=new Set([...(S?S.cx:[]),...allFound()]);
+  const tabs=[["all","All"],...Object.entries(CATS)];
+  $("cxTabs").innerHTML=tabs.map(([k,l])=>{const n=Object.entries(CX).filter(([id,x])=>(k==="all"||x[1]===k)&&found.has(id)).length,t=Object.values(CX).filter(x=>k==="all"||x[1]===k).length;return`<button class="tab ${k===cxTab?"on":""}" data-k="${k}">${l} ${n}/${t}</button>`}).join("");
+  $("cxTabs").querySelectorAll(".tab").forEach(b=>b.onclick=()=>{cxTab=b.dataset.k;openCodex()});
+  let h="";Object.entries(CX).forEach(([id,x])=>{if(cxTab!=="all"&&x[1]!==cxTab)return;h+=found.has(id)?`<div class="cx"><div class="k ${x[1]}"><img src="assets/ui/ui_${x[1]==="parallel"?"parallel":x[1]}.png" alt="">${CATS[x[1]].toUpperCase()}</div><h4>${x[0]}</h4><div class="src">${x[2]}</div><p>${x[3]}</p></div>`:`<div class="cx locked"><div class="k ${x[1]}">${CATS[x[1]].toUpperCase()}</div><h4>Sealed scroll</h4><p>Another choice, in another life, will open it.</p></div>`});
+  $("cxlist").innerHTML=h;$("codex").classList.add("on")}
+$("cxClose").onclick=()=>{$("codex").classList.remove("on");if(mode==="codex")mode=prevMode};
+$("cxBtn").onclick=openCodex;$("cxBtn2").onclick=openCodex;
+$("camBtn").onclick=()=>{P.third=!P.third;$("camBtn").textContent=P.third?"👁 3RD":"👁 1ST";try{localStorage.setItem("scribe3d-cam",P.third?"3":"1")}catch(e){}};
+$("act").onclick=()=>{if(mode==="play"&&nearPt)openDlg(nearPt)};
+
+function showEnd(){mode="end";const top=[["f",S.f],["w",S.w],["v",S.v]].sort((a,b)=>b[1]-a[1])[0][0];const e=ENDINGS[top],tot=Object.keys(CX).length;
+  $("endInner").innerHTML=`<div class="eyebrow">YOUR HAND WAS</div><h2>${e[0]}</h2><p>${e[1]}</p><p>${e[2]}</p><div class="estats">✦ FAITH ${S.f} &nbsp; ◈ WISDOM ${S.w} &nbsp; ◉ VISION ${S.v}<br><br>📜 ${S.cx.length} OF ${tot} SCROLLS RECOVERED</div><p class="sm">${S.cx.length<tot?"Some scrolls are still sealed. Every life holds choices you did not make.":"Every scroll recovered. Nothing was held back."}</p><button class="big pri" id="eCx">OPEN THE CODEX</button><button class="big" id="eNew">LIVE AGAIN</button>`;
+  $("end").classList.add("on");$("eCx").onclick=openCodex;$("eNew").onclick=()=>{$("end").classList.remove("on");try{localStorage.removeItem("scribe3d")}catch(x){}begin(true)};
+  try{localStorage.removeItem("scribe3d")}catch(x){}}
+
+/* ---------- audio ---------- */
+let AC=null,master,oscs=[],on=false;
+function audioInit(){AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=0;const filt=AC.createBiquadFilter();filt.type="lowpass";filt.frequency.value=700;filt.connect(master);master.connect(AC.destination);
+  [55,82.5,110,164.8].forEach((f,i)=>{const o=AC.createOscillator();o.type=i%2?"triangle":"sine";o.frequency.value=f;const g=AC.createGain();g.gain.value=[.5,.25,.18,.07][i];const l=AC.createOscillator();l.frequency.value=.05+i*.03;const lg=AC.createGain();lg.gain.value=.8;l.connect(lg);lg.connect(o.detune);o.connect(g);g.connect(filt);o.start();l.start();oscs.push(o)})}
+const ROOTS=[55,49,46.25,51.91,55,58.27,46.25,61.74,51.91,55,43.65,49,55,58.27];
+function tuneAudio(i){if(!AC)return;const r=ROOTS[i]||55,m=[1,1.5,2,3];oscs.forEach((o,k)=>o.frequency.setTargetAtTime(r*m[k],AC.currentTime,2))}
+function sfx(){if(!AC||!on)return;const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=660;g.gain.setValueAtTime(.0001,AC.currentTime);g.gain.exponentialRampToValueAtTime(.08,AC.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+1.6);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+1.7)}
+function soundOn(v){try{if(!AC)audioInit();AC.resume();on=v;master.gain.setTargetAtTime(on?.13:0,AC.currentTime,.8);if(AUD.music){if(on)AUD.music.play().then(()=>master.gain.setTargetAtTime(0,AC.currentTime,.5)).catch(()=>{});else AUD.music.pause()}if(!on)stopNarr();$("snd").textContent=on?"♪ ON":"♪ OFF";if(S)tuneAudio(S.lvl)}catch(e){$("snd").textContent="♪ N/A"}}
+$("snd").onclick=()=>soundOn(!on);
+const AUD={music:null,narr:null,has:{}};
+function audURL(n){return `assets/audio/${n}.mp3`}
+function playMusic(i){const n=i==null?"theme":"music_"+String(i+1).padStart(2,"0");if(AUD.musicName===n)return;AUD.musicName=n;const old=AUD.music;const a=new Audio(audURL(n));a.loop=true;a.volume=0;AUD.music=a;
+  if(on)a.play().then(()=>{if(master)master.gain.setTargetAtTime(0,AC.currentTime,.5)}).catch(()=>{});fadeA(a,.45);if(old)fadeA(old,0,()=>old.pause())}
+function fadeA(a,to,cb){const st=a.volume,t0=performance.now();const f=()=>{const k=Math.min(1,(performance.now()-t0)/1500);a.volume=st+(to-st)*k;if(k<1)requestAnimationFrame(f);else if(cb)cb()};f()}
+function narrate(i,kind){if(AUD.narr){AUD.narr.pause();AUD.narr=null}if(!on)return;const a=new Audio(audURL(`narr_${String(i+1).padStart(2,"0")}_${kind}`));a.volume=1;AUD.narr=a;if(AUD.music)fadeA(AUD.music,.18);a.onended=()=>{if(AUD.music)fadeA(AUD.music,.45)};a.play().catch(()=>{})}
+function stopNarr(){if(AUD.narr){AUD.narr.pause();AUD.narr=null}if(AUD.music)fadeA(AUD.music,.45)}
+
+/* ---------- loop ---------- */
+let last=performance.now(),T=0;
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
+  if(LV){
+    if(mode==="play"){movePlayer(dt);playCam(dt);compass()}
+    else if(mode==="cut"&&CUT)updCut(dt);
+    else if(mode==="dlg"||mode==="codex"){P.fig.moving=false;if(P.third)playCam(dt);else{camera.position.set(P.x,eyeY(),P.z);camera.rotation.set(P.pitch,P.yaw,0)}}
+    rigUpdate(dt);for(const f of FIGS){updFig(f,dt);if(f.npc&&!f.fall&&f.pose!=="sit"&&f.pose!=="bow"&&f.s<1.7){const dx=P.x-f.g.position.x,dz=P.z-f.g.position.z;if(dx*dx+dz*dz<64){const a=Math.atan2(dx,dz);let r=a-f.g.rotation.y;r=Math.atan2(Math.sin(r),Math.cos(r));f.g.rotation.y+=r*Math.min(1,dt*2)}}}
+    for(const u of LV.upd)u(dt,T);LV.fx=LV.fx.filter(f=>!f(dt));
+    for(const m of LV.markers){m.orb.position.y=2.4+Math.sin(T*2+m.pt.pos[0])*.18;m.orb2.position.y=m.orb.position.y;if(!m.done){m.orb.scale.setScalar(2.2+Math.sin(T*3)*.25);m.orb2.material.rotation=T*.8;const r=m.pil.userData.rune;if(r){r.rotation.z=T*.25;r.material.opacity=.55+Math.sin(T*2)*.25}const pdn=Math.min(1,Math.max(.12,(Math.hypot(P.x-m.pt.pos[0],P.z-m.pt.pos[1])-1.5)/7));m.pil.material.opacity=(.5+Math.sin(T*1.6+m.pt.pos[1])*.12)*pdn;if(Math.random()<dt*6){const v=new THREE.Vector3(m.pt.pos[0]+(Math.random()-.5)*2,m.g.position.y+.2,m.pt.pos[1]+(Math.random()-.5)*2);mote(v,"#ffe8b0")}}}
+    if(LV.portal&&LV.portalOn){const g=LV.portal.g;g.scale.setScalar(Math.min(1,g.scale.x+dt*.8));LV.portal.ring.rotation.z+=dt*.6;LV.portal.disc.material.opacity=.75+Math.sin(T*2)*.15;LV.portal.disc.rotation.z-=dt*.15;const pr=LV.portal.ring.userData;if(pr.d2)pr.d2.rotation.z+=dt*.5;if(pr.gr)pr.gr.rotation.z-=dt*.3;if(Math.random()<dt*14){const a=Math.random()*6.28,rr=2+Math.random()*.6;const v=new THREE.Vector3(g.position.x+Math.cos(a)*rr*.3,g.position.y+.2+Math.random()*4,g.position.z+Math.sin(a)*rr*.3);mote(v,"#fff0c0")}g.rotation.y=Math.atan2(P.x-g.position.x,P.z-g.position.z)}
+    for(const w of LV.waters)w.position.y+=Math.sin(T*1.2)*.0008;
+    if(LV.pano)LV.pano.position.set(camera.position.x,LV.panoY,camera.position.z);
+    if(LV.sea){const p=LV.sea.geometry.attributes.position;for(let k=0;k<p.count;k++){const x=p.getX(k),y=p.getY(k);p.setZ(k,Math.sin(x*.18+T*1.1)*.18+Math.cos(y*.21+T*.9)*.18)}p.needsUpdate=true;LV.sea.geometry.computeVertexNormals()}
+    updWeather(dt,T);
+  }
+  renderer.render(scene,camera);requestAnimationFrame(frame)}
+
+/* ---------- unlock / paywall ---------- */
+const PAY={on:false,free:3,link:"",ok:false,pend:null};
+function payOk(){try{return!!localStorage.getItem("scribe-unlock")}catch(e){return false}}
+function payStore(t){try{localStorage.setItem("scribe-unlock",t)}catch(e){}PAY.ok=true}
+function gate(i,go){if(!PAY.on||PAY.ok||i<PAY.free)return go();PAY.pend=go;mode="pay";$("payMsg").textContent="";$("pay").classList.add("on")}
+function payDone(msg){$("pay").classList.remove("on");toast(msg||"The full life of the Scribe is open to you.");if(PAY.pend){const g=PAY.pend;PAY.pend=null;g()}}
+fetch("/api/config").then(r=>r.ok?r.json():null).then(c=>{if(!c||!c.paywall)return;PAY.on=true;PAY.free=c.freeChapters||3;PAY.link=c.paymentLink||"";$("payPriceTxt").textContent=c.price||"$4.99";
+  const t=(()=>{try{return localStorage.getItem("scribe-unlock")}catch(e){return null}})();
+  if(t)fetch("/api/check",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:t})}).then(r=>r.json()).then(j=>{PAY.ok=!!j.ok;if(!j.ok)try{localStorage.removeItem("scribe-unlock")}catch(e){}}).catch(()=>{PAY.ok=true});
+  const sid=new URLSearchParams(location.search).get("session_id");
+  if(sid){history.replaceState(null,"",location.pathname);fetch("/api/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({session_id:sid})}).then(r=>r.json()).then(j=>{if(j.ok){payStore(j.token);toast("Thank you — every chapter is now unlocked.")}else toast(j.error||"Payment not confirmed yet.")})}
+}).catch(()=>{});
+$("payBuy").onclick=()=>{if(!PAY.link){$("payMsg").textContent="Purchases open soon.";return}location.href=PAY.link};
+$("payCodeBtn").onclick=()=>{const c=$("payCodeIn").value.trim();if(!c)return;$("payMsg").textContent="Checking…";fetch("/api/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({code:c})}).then(r=>r.json()).then(j=>{if(j.ok){payStore(j.token);payDone("Code accepted — every chapter is now unlocked.")}else $("payMsg").textContent=j.error||"That code isn't valid."}).catch(()=>{$("payMsg").textContent="Couldn't reach the server."})};
+$("payBack").onclick=()=>{$("pay").classList.remove("on");PAY.pend=null;location.reload()};
+
+/* ---------- start ---------- */
+function begin(isNew){S=isNew?fresh():(loadSave()||fresh());$("title").classList.remove("on");try{P.third=localStorage.getItem("scribe3d-cam")==="3"}catch(e){}$("camBtn").textContent=P.third?"👁 3RD":"👁 1ST";
+  document.body.classList.add("ingame");if(PAY.on&&!PAY.ok&&S.lvl>=PAY.free){gate(S.lvl,()=>begin(false));return}loadLevel(S.lvl);hud();introCut(()=>{if(isNew)setTimeout(()=>toast(matchMedia("(pointer:coarse)").matches?"Left thumb: walk · Right thumb: look":"WASD: walk · Drag: look · E: interact"),400)})}
+$("newBtn").onclick=()=>{soundOn(true);begin(true)};
+addEventListener("pointerdown",function th(){if(!AUD.music&&mode==="title"){playMusic(null);if(!on)AUD.music.pause()}removeEventListener("pointerdown",th)},{once:true});
+$("contBtn").onclick=()=>{soundOn(true);begin(false)};
+if(loadSave())$("contBtn").style.display="block";
+// title backdrop
+S=fresh();L=LEVELS[0];LV={solids:[],npcs:[],upd:[],waters:[],markers:[],fx:[]};
+(function titleScene(){scene.add(skyDome(["#000","#0a0614","#1a1028"]));const n=1400,a=new Float32Array(n*3);for(let k=0;k<n;k++){const th=Math.random()*6.28,ph=Math.random()*3.1;a[k*3]=Math.cos(th)*Math.sin(ph)*300;a[k*3+1]=Math.cos(ph)*300;a[k*3+2]=Math.sin(th)*Math.sin(ph)*300}const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(a,3));scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:"#fff",size:1.4,sizeAttenuation:false})));
+  const sp=sprite("#d8b46a",60,.35);sp.position.set(0,0,-80);scene.add(sp);camera.position.set(0,0,0);LV.upd.push((dt,t)=>{camera.rotation.set(Math.sin(t*.1)*.05,t*.03,0)})})();
+requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>

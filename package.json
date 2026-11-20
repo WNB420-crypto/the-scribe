@@ -1,0 +1,1 @@
+{"name":"the-scribe","version":"1.0.0","private":true,"description":"The Scribe — One Story of Every Scripture","main":"server.js","scripts":{"start":"node server.js"},"engines":{"node":">=18"}}
